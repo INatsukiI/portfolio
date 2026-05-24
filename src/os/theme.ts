@@ -1,0 +1,28 @@
+export const OS = {
+  desktop:    '#88947a',
+  desktopDark:'#6e7960',
+  wallDot:    '#5a6450',
+  chrome:     '#3a2f1f',
+  chromeLite: '#6a4f24',
+  chromeHi:   '#8a6a3a',
+  chromeFg:   '#f3e6c4',
+  body:       '#f3e6c4',
+  bodyAlt:    '#e8d8a8',
+  bodyEdge:   '#d8c598',
+  bodyShade:  '#a48a52',
+  ink:        '#2b2620',
+  inkSoft:    '#5e4a2c',
+  red:        '#c44a3a',
+  redDark:    '#9a4632',
+  yellow:     '#e8c84a',
+  yellowDark: '#a07a28',
+  blue:       '#558bb8',
+  blueDark:   '#3a648f',
+  teal:       '#3a7866',
+  green:      '#5f8240',
+  greenDark:  '#456030',
+  white:      '#f8f1d8',
+  shadow:     'rgba(40,30,16,0.45)',
+} as const
+
+export type OSKey = keyof typeof OS
