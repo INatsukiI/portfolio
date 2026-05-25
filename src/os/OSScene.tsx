@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { PROFILE } from '../profile'
 import { OS } from './theme'
-import { OSIcon, ICONS } from './icons'
+import { OSIcon } from './icons'
 import { useContainerSize, currentClock } from './hooks'
 import { DESKTOP_ICONS, WIN_DEFAULTS } from './constants'
 import type { WindowState } from './constants'
@@ -14,11 +14,7 @@ import { WinCareer } from './windows/WinCareer'
 import { WinContact } from './windows/WinContact'
 import { WinReadme } from './windows/WinReadme'
 
-interface OSSceneProps {
-  scale?: number
-}
-
-export default function OSScene({ scale: _scale = 2 }: OSSceneProps) {
+export default function OSScene() {
   const screenRef = useRef<HTMLDivElement>(null)
   const { w: cw } = useContainerSize(screenRef)
   const compact = cw < 720
@@ -208,7 +204,7 @@ export default function OSScene({ scale: _scale = 2 }: OSSceneProps) {
               onMouseEnter={e => (e.currentTarget.style.background = OS.chromeLite)}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
-              <OSIcon {...ICONS[ic.kind]} size={20} />
+              <OSIcon kind={ic.kind} size={20} />
               {ic.label}
             </div>
           ))}
@@ -285,7 +281,7 @@ export default function OSScene({ scale: _scale = 2 }: OSSceneProps) {
                 display: 'flex', alignItems: 'center', gap: 6,
                 flex: '0 0 auto',
               }}>
-              <OSIcon {...ICONS[w.icon]} size={16} />
+              <OSIcon kind={w.icon} size={16} />
               {!compact && <span>{w.title.split('—')[0].trim()}</span>}
             </div>
           ))}

@@ -25,7 +25,7 @@ export function OSWindow({ title, x, y, w, z, compact, onClose, onFocus, onMove,
     onFocus()
     const sx = e.clientX, sy = e.clientY
     const ox = x, oy = y
-    try { e.currentTarget.setPointerCapture(e.pointerId) } catch (_) {}
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* ignore */ }
     const onMv = (ev: PointerEvent) => onMove(ox + (ev.clientX - sx), oy + (ev.clientY - sy))
     const onUp = () => {
       window.removeEventListener('pointermove', onMv)

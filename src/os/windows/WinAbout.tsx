@@ -1,6 +1,6 @@
 import { PROFILE } from '../../profile'
 import { OS } from '../theme'
-import { OSIcon } from '../icons'
+import { PixelIcon } from '../icons'
 import { SectionHead } from '../components/ui/SectionHead'
 import { DataRow } from '../components/ui/DataRow'
 
@@ -18,7 +18,7 @@ export function WinAbout() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flex: '0 0 auto',
         }}>
-          <OSIcon
+          <PixelIcon
             p={`
 ................
 .........afff...

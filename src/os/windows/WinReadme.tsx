@@ -17,7 +17,7 @@ export function WinReadme({ onOpen }: WinReadmeProps) {
         ようこそ、{PROFILE.name} のポートフォリオへ。
       </p>
       <p style={{ margin: '0 0 10px' }}>
-        左のデスクトップアイコンをダブルクリックすると、各セクションがウィンドウで開きます。
+        左のデスクトップアイコンをクリックすると、各セクションがウィンドウで開きます。
       </p>
       <SectionHead style={{ marginTop: 16 }}>// quickstart</SectionHead>
       <ul style={{ paddingLeft: 18, margin: '6px 0 14px' }}>

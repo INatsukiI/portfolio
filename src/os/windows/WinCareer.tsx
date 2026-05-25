@@ -24,8 +24,8 @@ export function WinCareer() {
             </div>
             <div style={{ color: OS.bodyEdge }}>Date: {h.year}</div>
             <div style={{ marginTop: 4, color: OS.white }}>{h.title}</div>
-            <div style={{ color: OS.bodyEdge, fontSize: 11 }}>　{h.org}</div>
-            <div style={{ marginTop: 2, fontSize: 11 }}>　{h.body}</div>
+            <div style={{ color: OS.bodyEdge, fontSize: 11, paddingLeft: 8 }}>{h.org}</div>
+            <div style={{ marginTop: 2, fontSize: 11, paddingLeft: 8 }}>{h.body}</div>
           </div>
         ))}
       </div>

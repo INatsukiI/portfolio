@@ -1,6 +1,6 @@
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { OS } from '../theme'
-import { OSIcon, ICONS } from '../icons'
+import { OSIcon } from '../icons'
 import type { IconKey } from '../icons'
 
 interface DesktopIconProps {
@@ -25,7 +25,7 @@ export function DesktopIcon({ kind, label, onOpen, selected, compact }: DesktopI
         outline: selected ? `1px dotted ${OS.body}` : 'none',
         touchAction: 'manipulation',
       }}>
-      <OSIcon {...ICONS[kind]} size={compact ? 44 : 40} />
+      <OSIcon kind={kind} size={compact ? 44 : 40} />
       <div style={{
         marginTop: 4,
         fontFamily: '"DotGothic16", monospace',
