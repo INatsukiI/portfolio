@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode, PointerEvent as ReactPointerEvent } from 'react'
+import { motion } from 'framer-motion'
 import { OS } from '../theme'
 import type { IconKey } from '../icons'
 
@@ -43,8 +44,12 @@ export function OSWindow({ title, x, y, w, z, compact, onClose, onFocus, onMove,
     left: x, top: y, width: w, minHeight: 0, maxHeight: '92%',
   }
   return (
-    <div
+    <motion.div
       onPointerDown={onFocus}
+      initial={{ opacity: 0, scale: 0.94, y: -6 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.94, y: -6 }}
+      transition={{ duration: 0.12, ease: 'easeOut' }}
       style={{
         ...positionStyle,
         zIndex: z,
@@ -110,6 +115,6 @@ export function OSWindow({ title, x, y, w, z, compact, onClose, onFocus, onMove,
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

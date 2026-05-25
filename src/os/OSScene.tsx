@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { PROFILE } from '../profile'
 import { OS } from './theme'
 import { OSIcon } from './icons'
@@ -23,7 +25,7 @@ export default function OSScene() {
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   const [booting, setBooting] = useState(true)
   const [clock, setClock] = useState(currentClock())
-  const [startMenu, setStartMenu] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const t = setTimeout(() => setBooting(false), 1500)
@@ -63,7 +65,7 @@ export default function OSScene() {
   return (
     <div
       ref={screenRef}
-      onClick={(e) => { if (e.target === screenRef.current) { setSelectedIcon(null); setStartMenu(false) } }}
+      onClick={(e) => { if (e.target === screenRef.current) setSelectedIcon(null) }}
       style={{
         position: 'relative',
         width: '100%', height: '100%',
@@ -167,68 +169,26 @@ export default function OSScene() {
         </div>
       )}
 
-      {/* Start menu */}
-      {startMenu && (
-        <div
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            position: 'absolute', bottom: compact ? 40 : 36, left: 0,
-            width: 220, zIndex: 200,
-            background: OS.chrome,
-            border: `2px solid ${OS.ink}`,
-            boxShadow: `4px 0 0 ${OS.chromeLite}, 4px 4px 0 ${OS.shadow}`,
-            display: 'flex', flexDirection: 'column',
-          }}>
-          {/* Header */}
-          <div style={{
-            background: `linear-gradient(180deg, ${OS.chromeLite} 0%, ${OS.chrome} 100%)`,
-            padding: '10px 12px',
-            borderBottom: `1px solid ${OS.ink}`,
-            display: 'flex', flexDirection: 'column', gap: 2,
-          }}>
-            <div style={{ fontFamily: '"Press Start 2P", monospace', fontSize: 11, letterSpacing: 1, color: OS.yellow }}>★ OMU OS</div>
-            <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10, color: OS.chromeFg, opacity: 0.8 }}>{PROFILE.handle}</div>
-          </div>
-          {/* Menu items */}
-          {DESKTOP_ICONS.map(ic => (
-            <div
-              key={ic.id}
-              onClick={() => { openWindow(ic.id); setStartMenu(false) }}
-              style={{
-                padding: '7px 14px',
-                fontSize: 12, fontFamily: '"DotGothic16", monospace',
-                color: OS.chromeFg, cursor: 'pointer',
-                borderBottom: `1px solid ${OS.chromeLite}22`,
-                display: 'flex', alignItems: 'center', gap: 10,
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = OS.chromeLite)}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <OSIcon kind={ic.kind} size={20} />
-              {ic.label}
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Windows */}
-      {windows.map(w => (
-        <OSWindow
-          key={w.id}
-          {...w}
-          compact={compact}
-          onClose={() => closeWindow(w.id)}
-          onFocus={() => focusWindow(w.id)}
-          onMove={(x, y) => moveWindow(w.id, x, y)}
-        >
-          {w.id === 'readme'   && <WinReadme onOpen={openWindow} />}
-          {w.id === 'about'    && <WinAbout />}
-          {w.id === 'skills'   && <WinSkills />}
-          {w.id === 'projects' && <WinProjects />}
-          {w.id === 'career'   && <WinCareer />}
-          {w.id === 'contact'  && <WinContact />}
-        </OSWindow>
-      ))}
+      <AnimatePresence>
+        {windows.map(w => (
+          <OSWindow
+            key={w.id}
+            {...w}
+            compact={compact}
+            onClose={() => closeWindow(w.id)}
+            onFocus={() => focusWindow(w.id)}
+            onMove={(x, y) => moveWindow(w.id, x, y)}
+          >
+            {w.id === 'readme'   && <WinReadme onOpen={openWindow} />}
+            {w.id === 'about'    && <WinAbout />}
+            {w.id === 'skills'   && <WinSkills />}
+            {w.id === 'projects' && <WinProjects />}
+            {w.id === 'career'   && <WinCareer />}
+            {w.id === 'contact'  && <WinContact />}
+          </OSWindow>
+        ))}
+      </AnimatePresence>
 
       {/* Bottom taskbar */}
       <div style={{
@@ -239,28 +199,79 @@ export default function OSScene() {
         display: 'flex', alignItems: 'center',
         padding: '0 6px', gap: 6,
         zIndex: 100,
-        overflow: 'hidden',
+        overflow: 'visible',
       }}>
-        <div
-          onClick={(e) => { e.stopPropagation(); setStartMenu(v => !v) }}
-          style={{
-            fontFamily: '"Press Start 2P", monospace', fontSize: 9,
-            letterSpacing: 1,
-            background: startMenu
-              ? `linear-gradient(180deg, ${OS.chromeLite} 0%, ${OS.chromeHi} 100%)`
-              : `linear-gradient(180deg, ${OS.chromeHi} 0%, ${OS.chromeLite} 100%)`,
-            color: OS.chromeFg,
-            padding: '4px 10px',
-            boxShadow: startMenu
-              ? `inset 1px 1px 0 ${OS.ink}, inset -1px -1px 0 ${OS.chromeHi}`
-              : `inset 1px 1px 0 ${OS.chromeHi}, inset -1px -1px 0 ${OS.ink}`,
-            cursor: 'pointer',
-            flex: '0 0 auto',
-            display: 'flex', alignItems: 'center', gap: 5,
-          }}>
-          <span style={{ color: OS.yellow, fontSize: 10 }}>★</span>
-          {!compact && 'スタート'}
-        </div>
+        {/* Start menu — Radix DropdownMenu */}
+        <DropdownMenu.Root onOpenChange={setMenuOpen}>
+          <DropdownMenu.Trigger asChild>
+            <div style={{
+              fontFamily: '"Press Start 2P", monospace', fontSize: 9,
+              letterSpacing: 1,
+              background: menuOpen
+                ? `linear-gradient(180deg, ${OS.chromeLite} 0%, ${OS.chromeHi} 100%)`
+                : `linear-gradient(180deg, ${OS.chromeHi} 0%, ${OS.chromeLite} 100%)`,
+              color: OS.chromeFg,
+              padding: '4px 10px',
+              boxShadow: menuOpen
+                ? `inset 1px 1px 0 ${OS.ink}, inset -1px -1px 0 ${OS.chromeHi}`
+                : `inset 1px 1px 0 ${OS.chromeHi}, inset -1px -1px 0 ${OS.ink}`,
+              cursor: 'pointer',
+              flex: '0 0 auto',
+              display: 'flex', alignItems: 'center', gap: 5,
+              outline: 'none',
+            }}>
+              <span style={{ color: OS.yellow, fontSize: 10 }}>★</span>
+              {!compact && 'スタート'}
+            </div>
+          </DropdownMenu.Trigger>
+
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              side="top"
+              align="start"
+              sideOffset={2}
+              style={{
+                width: 220, zIndex: 9999,
+                background: OS.chrome,
+                border: `2px solid ${OS.ink}`,
+                boxShadow: `4px 0 0 ${OS.chromeLite}, 4px 4px 0 ${OS.shadow}`,
+                display: 'flex', flexDirection: 'column',
+                outline: 'none',
+              }}>
+              {/* Header */}
+              <div style={{
+                background: `linear-gradient(180deg, ${OS.chromeLite} 0%, ${OS.chrome} 100%)`,
+                padding: '10px 12px',
+                borderBottom: `1px solid ${OS.ink}`,
+                display: 'flex', flexDirection: 'column', gap: 2,
+              }}>
+                <div style={{ fontFamily: '"Press Start 2P", monospace', fontSize: 11, letterSpacing: 1, color: OS.yellow }}>★ OMU OS</div>
+                <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10, color: OS.chromeFg, opacity: 0.8 }}>{PROFILE.handle}</div>
+              </div>
+              {/* Menu items */}
+              {DESKTOP_ICONS.map(ic => (
+                <DropdownMenu.Item
+                  key={ic.id}
+                  onSelect={() => openWindow(ic.id)}
+                  style={{
+                    padding: '7px 14px',
+                    fontSize: 12, fontFamily: '"DotGothic16", monospace',
+                    color: OS.chromeFg, cursor: 'pointer',
+                    borderBottom: `1px solid ${OS.chromeLite}22`,
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    outline: 'none',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = OS.chromeLite)}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <OSIcon kind={ic.kind} size={20} />
+                  {ic.label}
+                </DropdownMenu.Item>
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+
         <div style={{ width: 2, height: 22, background: OS.chromeLite, marginLeft: 2, marginRight: 4, flex: '0 0 auto' }} />
         <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, overflowX: 'auto' }}>
           {windows.map(w => (
@@ -301,35 +312,46 @@ export default function OSScene() {
         }}>{clock}</div>
       </div>
 
-      {/* Boot splash overlay */}
-      {booting && (
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 999,
-          background: OS.ink, color: OS.chromeFg,
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          gap: 18,
-          fontFamily: '"Press Start 2P", monospace',
-        }}>
-          <div style={{ fontSize: 24, letterSpacing: 3 }}>★ OMU OS</div>
-          <div style={{ fontSize: 10, opacity: 0.7, letterSpacing: 1 }}>v1.0 · OMU EDITION</div>
-          <div style={{
-            width: 240, height: 10,
-            background: OS.chromeLite,
-            border: `1px solid ${OS.chromeFg}`,
-            position: 'relative',
-            marginTop: 12,
-          }}>
+      {/* Boot splash overlay — Framer Motion */}
+      <AnimatePresence>
+        {booting && (
+          <motion.div
+            key="boot"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            style={{
+              position: 'absolute', inset: 0, zIndex: 999,
+              background: OS.ink, color: OS.chromeFg,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              gap: 18,
+              fontFamily: '"Press Start 2P", monospace',
+            }}>
+            <div style={{ fontSize: 24, letterSpacing: 3 }}>★ OMU OS</div>
+            <div style={{ fontSize: 10, opacity: 0.7, letterSpacing: 1 }}>v1.0 · OMU EDITION</div>
             <div style={{
-              position: 'absolute', left: 0, top: 0, bottom: 0,
-              animation: 'pxbar 1.4s ease-out forwards',
-              background: `repeating-linear-gradient(90deg, ${OS.yellow} 0 4px, ${OS.yellowDark} 4px 6px)`,
-            }} />
-          </div>
-          <div style={{ fontSize: 9, opacity: 0.5, marginTop: 8 }}>loading kernel...</div>
-          <style>{`@keyframes pxbar { from { width: 0 } to { width: 100% } }`}</style>
-        </div>
-      )}
+              width: 240, height: 10,
+              background: OS.chromeLite,
+              border: `1px solid ${OS.chromeFg}`,
+              position: 'relative',
+              marginTop: 12,
+              overflow: 'hidden',
+            }}>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 1.4, ease: 'easeOut' }}
+                style={{
+                  position: 'absolute', left: 0, top: 0, bottom: 0,
+                  background: `repeating-linear-gradient(90deg, ${OS.yellow} 0 4px, ${OS.yellowDark} 4px 6px)`,
+                }}
+              />
+            </div>
+            <div style={{ fontSize: 9, opacity: 0.5, marginTop: 8 }}>loading kernel...</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
