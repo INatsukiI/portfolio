@@ -37,7 +37,7 @@ export function WinReadme({ onOpen }: WinReadmeProps) {
 
       <SectionHead>tips</SectionHead>
       <ul className="mt-3 mb-5 space-y-1.5 list-none p-0">
-        {['アイコンをタップ / クリックしてウィンドウを開く', '× ボタンでウィンドウを閉じる', '下のバーのボタンから再オープン'].map((tip, i) => (
+        {['アイコンをタップ / クリックしてウィンドウを開く', '左上の赤いボタンでウィンドウを閉じる', '画面下のタスクバーから閉じたウィンドウを再オープン'].map((tip, i) => (
           <li key={i} className="flex gap-2 text-muted-foreground text-xs">
             <span className="text-border">›</span>{tip}
           </li>
