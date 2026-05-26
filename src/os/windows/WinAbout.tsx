@@ -9,7 +9,7 @@ export function WinAbout() {
     <div style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif", fontSize: 13 }}>
       <div style={{ display: 'flex', gap: 16, marginBottom: 16, alignItems: 'flex-start' }}>
         <img
-          src="/avatar.png"
+          src={`${import.meta.env.BASE_URL}avatar.png`}
           alt="avatar"
           width={88}
           height={88}
