@@ -1,4 +1,4 @@
-import { OS } from '../../theme'
+import { cn } from '@/lib/utils'
 
 interface DataRowProps {
   label: string
@@ -8,14 +8,9 @@ interface DataRowProps {
 
 export function DataRow({ label, val, mono }: DataRowProps) {
   return (
-    <div style={{
-      display: 'flex', justifyContent: 'space-between',
-      borderBottom: `1px dashed ${OS.bodyEdge}`,
-      padding: '2px 0',
-      fontSize: 12,
-    }}>
-      <span style={{ color: OS.inkSoft, fontFamily: '"Press Start 2P", monospace', fontSize: 8, letterSpacing: 1 }}>{label}</span>
-      <span style={{ fontFamily: mono ? 'ui-monospace, monospace' : 'inherit' }}>{val}</span>
+    <div className="flex justify-between border-b border-border py-1 text-sm">
+      <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">{label}</span>
+      <span className={cn('text-foreground', mono && 'font-mono text-xs')}>{val}</span>
     </div>
   )
 }

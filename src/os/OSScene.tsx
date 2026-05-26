@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { DropdownMenu } from 'radix-ui'
 import { PROFILE } from '../profile'
-import { OS } from './theme'
-import { OSIcon, ICONS } from './icons'
+import { OSIcon } from './icons'
 import { useContainerSize, currentClock } from './hooks'
 import { DESKTOP_ICONS, WIN_DEFAULTS } from './constants'
 import type { WindowState } from './constants'
@@ -13,12 +14,10 @@ import { WinProjects } from './windows/WinProjects'
 import { WinCareer } from './windows/WinCareer'
 import { WinContact } from './windows/WinContact'
 import { WinReadme } from './windows/WinReadme'
+import { WinTrash } from './windows/WinTrash'
+import { cn } from '@/lib/utils'
 
-interface OSSceneProps {
-  scale?: number
-}
-
-export default function OSScene({ scale: _scale = 2 }: OSSceneProps) {
+export default function OSScene() {
   const screenRef = useRef<HTMLDivElement>(null)
   const { w: cw } = useContainerSize(screenRef)
   const compact = cw < 720
@@ -27,10 +26,10 @@ export default function OSScene({ scale: _scale = 2 }: OSSceneProps) {
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   const [booting, setBooting] = useState(true)
   const [clock, setClock] = useState(currentClock())
-  const [startMenu, setStartMenu] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
-    const t = setTimeout(() => setBooting(false), 1500)
+    const t = setTimeout(() => setBooting(false), 2000)
     return () => clearTimeout(t)
   }, [])
 
@@ -47,77 +46,78 @@ export default function OSScene({ scale: _scale = 2 }: OSSceneProps) {
       if (ex) return ws.map(w => w.id === id ? { ...w, z: newZ } : w)
       const d = WIN_DEFAULTS[id]
       if (!d) return ws
-      const offset = (ws.length % 5) * 18
+      const offset = (ws.length % 5) * 20
       return [...ws, { id, ...d, x: d.x + offset, y: d.y + offset, z: newZ }]
     })
   }
 
   const closeWindow = (id: string) => setWindows(ws => ws.filter(w => w.id !== id))
-
   const focusWindow = (id: string) => {
     const newZ = zTop + 1
     setZTop(newZ)
-    setWindows(ws => ws.map(w => w.id === id ? { ...w, z: newZ } : w))
+    setWindows(ws => ws.map(w => w.id === id ? { ...w, z: newZ, minimized: false } : w))
   }
-
-  const moveWindow = (id: string, x: number, y: number) => {
+  const moveWindow = (id: string, x: number, y: number) =>
     setWindows(ws => ws.map(w => w.id === id ? { ...w, x, y } : w))
-  }
+  const minimizeWindow = (id: string) =>
+    setWindows(ws => ws.map(w => w.id === id ? { ...w, minimized: true } : w))
+  const maximizeWindow = (id: string) =>
+    setWindows(ws => ws.map(w => w.id === id ? { ...w, maximized: !w.maximized } : w))
 
   return (
     <div
       ref={screenRef}
-      onClick={(e) => { if (e.target === screenRef.current) { setSelectedIcon(null); setStartMenu(false) } }}
+      onClick={(e) => { if (e.target === screenRef.current) setSelectedIcon(null) }}
+      className="relative w-full h-full overflow-hidden select-none"
       style={{
-        position: 'relative',
-        width: '100%', height: '100%',
-        background: OS.desktop,
+        background: '#080c14',
         backgroundImage: `
-          radial-gradient(${OS.wallDot} 1px, transparent 1px),
-          radial-gradient(${OS.desktopDark} 1px, transparent 1px)
+          radial-gradient(circle at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 50%),
+          radial-gradient(circle at 80% 80%, rgba(100,50,255,0.04) 0%, transparent 50%),
+          linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px)
         `,
-        backgroundSize: '8px 8px, 16px 16px',
-        backgroundPosition: '0 0, 4px 4px',
-        fontFamily: '"DotGothic16", "Hiragino Kaku Gothic ProN", monospace',
-        overflow: 'hidden',
-        color: OS.chromeFg,
-        imageRendering: 'pixelated',
-        userSelect: 'none',
-      }}>
-      {/* Top menu bar */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: compact ? 24 : 26,
-        background: OS.chrome,
-        backgroundImage: `linear-gradient(180deg, ${OS.chromeHi} 0, ${OS.chrome} 100%)`,
-        color: OS.chromeFg,
-        display: 'flex', alignItems: 'center',
-        padding: compact ? '0 6px' : '0 10px', gap: compact ? 8 : 18,
-        borderBottom: `2px solid ${OS.ink}`,
-        boxShadow: `0 1px 0 ${OS.chromeLite}`,
-        fontSize: 11,
-        zIndex: 100,
-      }}>
-        <div style={{
-          fontFamily: '"Press Start 2P", monospace', fontSize: 9,
-          letterSpacing: 1,
-          color: OS.yellow,
-          padding: '2px 6px',
-        }}>★ OMU OS</div>
-        {!compact && <><div>ファイル</div><div>編集</div><div>表示</div><div>ウィンドウ</div><div>ヘルプ</div></>}
+        backgroundSize: '100% 100%, 100% 100%, 40px 40px, 40px 40px',
+        fontFamily: "'Space Grotesk', system-ui, sans-serif",
+        color: '#c8d8e8',
+      }}
+    >
+      {/* Top bar */}
+      <div
+        className="absolute top-0 left-0 right-0 flex items-center px-4 z-[100]"
+        style={{
+          height: compact ? 36 : 40,
+          background: 'rgba(6,14,28,0.8)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(0,212,255,0.1)',
+        }}
+      >
+        <div
+          className="font-bold tracking-[0.2em] text-xs"
+          style={{ color: '#00d4ff', fontFamily: "'JetBrains Mono', monospace" }}
+        >
+          OMU/OS
+        </div>
+        {!compact && (
+          <div className="flex items-center gap-6 ml-8 text-xs" style={{ color: 'rgba(200,216,232,0.45)' }}>
+            {['FILE', 'EDIT', 'VIEW', 'WINDOW'].map(m => (
+              <span key={m} className="hover:text-cyan-400 cursor-default transition-colors">{m}</span>
+            ))}
+          </div>
+        )}
+        <div className="ml-auto flex items-center gap-4 text-xs" style={{ fontFamily: "'JetBrains Mono', monospace", color: 'rgba(200,216,232,0.45)' }}>
+          {!compact && <span>{PROFILE.handle}</span>}
+          <span style={{ color: '#00d4ff' }}>{clock}</span>
+        </div>
       </div>
 
       {/* Desktop icons */}
-      <div style={compact ? {
-        position: 'absolute', top: 28, left: 0, right: 0,
-        padding: '8px 6px',
-        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: 4,
-        zIndex: 1,
-      } : {
-        position: 'absolute', top: 36, left: 8,
-        display: 'flex', flexDirection: 'column', gap: 4,
-        zIndex: 1,
-      }}>
+      <div
+        className={cn('absolute z-[1]', compact
+          ? 'top-10 left-0 right-0 p-2 grid grid-cols-3 gap-1'
+          : 'top-12 left-3 flex flex-col gap-1'
+        )}
+      >
         {DESKTOP_ICONS.map(ic => (
           <DesktopIcon
             key={ic.id}
@@ -134,206 +134,231 @@ export default function OSScene({ scale: _scale = 2 }: OSSceneProps) {
         ))}
       </div>
 
-      {/* Right-side system info — desktop only */}
+      {/* System info panel — desktop only */}
       {!compact && (
-        <div style={{
-          position: 'absolute', top: 36, right: 8,
-          zIndex: 1, width: 200,
-          fontSize: 11, color: OS.chromeFg,
-        }}>
-          <div style={{
-            background: OS.chrome,
-            border: `1px solid ${OS.chromeLite}`,
-            padding: 8,
-            boxShadow: `2px 2px 0 ${OS.shadow}`,
-          }}>
-            <div style={{
-              fontFamily: '"Press Start 2P", monospace', fontSize: 8,
-              marginBottom: 6, letterSpacing: 1,
-            }}>SYSTEM</div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
-              <span>User</span><span>{PROFILE.handle}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
-              <span>HOST</span><span>omu-mbp.local</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
-              <span>UPTIME</span><span>{PROFILE.exp}</span>
-            </div>
-            <div style={{ marginTop: 6, height: 6, background: OS.shadow, position: 'relative' }}>
-              <div style={{
-                position: 'absolute', inset: 0, width: '72%',
-                background: `repeating-linear-gradient(90deg, ${OS.green} 0 4px, ${OS.greenDark} 4px 5px)`,
-              }} />
-            </div>
-            <div style={{ fontSize: 9, marginTop: 2, opacity: 0.7 }}>CPU 72% · MEM 4.3GB</div>
-          </div>
-        </div>
-      )}
-
-      {/* Start menu */}
-      {startMenu && (
         <div
-          onClick={(e) => e.stopPropagation()}
+          className="absolute top-12 right-3 z-[1] w-48 rounded-lg p-3 text-xs"
           style={{
-            position: 'absolute', bottom: compact ? 40 : 36, left: 0,
-            width: 220, zIndex: 200,
-            background: OS.chrome,
-            border: `2px solid ${OS.ink}`,
-            boxShadow: `4px 0 0 ${OS.chromeLite}, 4px 4px 0 ${OS.shadow}`,
-            display: 'flex', flexDirection: 'column',
-          }}>
-          {/* Header */}
-          <div style={{
-            background: `linear-gradient(180deg, ${OS.chromeLite} 0%, ${OS.chrome} 100%)`,
-            padding: '10px 12px',
-            borderBottom: `1px solid ${OS.ink}`,
-            display: 'flex', flexDirection: 'column', gap: 2,
-          }}>
-            <div style={{ fontFamily: '"Press Start 2P", monospace', fontSize: 11, letterSpacing: 1, color: OS.yellow }}>★ OMU OS</div>
-            <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10, color: OS.chromeFg, opacity: 0.8 }}>{PROFILE.handle}</div>
+            background: 'rgba(6,14,28,0.7)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(0,212,255,0.1)',
+            fontFamily: "'JetBrains Mono', monospace",
+            color: 'rgba(200,216,232,0.5)',
+          }}
+        >
+          <div className="flex items-center gap-1.5 text-[10px] tracking-widest mb-3" style={{ color: '#00d4ff' }}>
+            <OSIcon kind="cpu" size={11} color="#00d4ff" />SYSTEM
           </div>
-          {/* Menu items */}
-          {DESKTOP_ICONS.map(ic => (
-            <div
-              key={ic.id}
-              onClick={() => { openWindow(ic.id); setStartMenu(false) }}
-              style={{
-                padding: '7px 14px',
-                fontSize: 12, fontFamily: '"DotGothic16", monospace',
-                color: OS.chromeFg, cursor: 'pointer',
-                borderBottom: `1px solid ${OS.chromeLite}22`,
-                display: 'flex', alignItems: 'center', gap: 10,
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = OS.chromeLite)}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <OSIcon {...ICONS[ic.kind]} size={20} />
-              {ic.label}
+          {[
+            ['USER', PROFILE.handle],
+            ['HOST', 'omu-node.local'],
+            ['UP',   PROFILE.exp],
+          ].map(([k, v]) => (
+            <div key={k} className="flex justify-between mb-1">
+              <span>{k}</span><span style={{ color: 'rgba(200,216,232,0.8)' }}>{v}</span>
             </div>
           ))}
+          <div className="mt-3 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: 'linear-gradient(90deg, #00d4ff, #7c3aed)', width: '72%' }}
+              initial={{ width: 0 }}
+              animate={{ width: '72%' }}
+              transition={{ duration: 1.2, delay: 2.2, ease: 'easeOut' }}
+            />
+          </div>
+          <div className="mt-1 text-[10px]">CPU 72% · MEM 4.3 GB</div>
         </div>
       )}
 
       {/* Windows */}
-      {windows.map(w => (
-        <OSWindow
-          key={w.id}
-          {...w}
-          compact={compact}
-          onClose={() => closeWindow(w.id)}
-          onFocus={() => focusWindow(w.id)}
-          onMove={(x, y) => moveWindow(w.id, x, y)}
-        >
-          {w.id === 'readme'   && <WinReadme onOpen={openWindow} />}
-          {w.id === 'about'    && <WinAbout />}
-          {w.id === 'skills'   && <WinSkills />}
-          {w.id === 'projects' && <WinProjects />}
-          {w.id === 'career'   && <WinCareer />}
-          {w.id === 'contact'  && <WinContact />}
-        </OSWindow>
-      ))}
+      <AnimatePresence>
+        {windows.filter(w => !w.minimized).map(w => (
+          <OSWindow
+            key={w.id}
+            {...w}
+            compact={compact}
+            onClose={() => closeWindow(w.id)}
+            onFocus={() => focusWindow(w.id)}
+            onMove={(x, y) => moveWindow(w.id, x, y)}
+            onMinimize={() => minimizeWindow(w.id)}
+            onMaximize={() => maximizeWindow(w.id)}
+          >
+            {w.id === 'readme'   && <WinReadme onOpen={openWindow} />}
+            {w.id === 'about'    && <WinAbout />}
+            {w.id === 'skills'   && <WinSkills />}
+            {w.id === 'projects' && <WinProjects />}
+            {w.id === 'career'   && <WinCareer />}
+            {w.id === 'contact'  && <WinContact />}
+            {w.id === 'trash'    && <WinTrash />}
+          </OSWindow>
+        ))}
+      </AnimatePresence>
 
       {/* Bottom taskbar */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: compact ? 36 : 32,
-        background: OS.chrome,
-        borderTop: `2px solid ${OS.ink}`,
-        boxShadow: `0 -1px 0 ${OS.chromeLite}`,
-        display: 'flex', alignItems: 'center',
-        padding: '0 6px', gap: 6,
-        zIndex: 100,
-        overflow: 'hidden',
-      }}>
-        <div
-          onClick={(e) => { e.stopPropagation(); setStartMenu(v => !v) }}
-          style={{
-            fontFamily: '"Press Start 2P", monospace', fontSize: 9,
-            letterSpacing: 1,
-            background: startMenu
-              ? `linear-gradient(180deg, ${OS.chromeLite} 0%, ${OS.chromeHi} 100%)`
-              : `linear-gradient(180deg, ${OS.chromeHi} 0%, ${OS.chromeLite} 100%)`,
-            color: OS.chromeFg,
-            padding: '4px 10px',
-            boxShadow: startMenu
-              ? `inset 1px 1px 0 ${OS.ink}, inset -1px -1px 0 ${OS.chromeHi}`
-              : `inset 1px 1px 0 ${OS.chromeHi}, inset -1px -1px 0 ${OS.ink}`,
-            cursor: 'pointer',
-            flex: '0 0 auto',
-            display: 'flex', alignItems: 'center', gap: 5,
-          }}>
-          <span style={{ color: OS.yellow, fontSize: 10 }}>★</span>
-          {!compact && 'スタート'}
-        </div>
-        <div style={{ width: 2, height: 22, background: OS.chromeLite, marginLeft: 2, marginRight: 4, flex: '0 0 auto' }} />
-        <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, overflowX: 'auto' }}>
+      <div
+        className="absolute bottom-0 left-0 right-0 flex items-center gap-2 px-3 z-[100] overflow-visible"
+        style={{
+          height: compact ? 48 : 44,
+          background: 'rgba(6,14,28,0.85)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(0,212,255,0.1)',
+        }}
+      >
+        {/* Start / launcher */}
+        <DropdownMenu.Root onOpenChange={setMenuOpen}>
+          <DropdownMenu.Trigger asChild>
+            <button
+              className={cn(
+                'flex items-center gap-2 px-3 py-1.5 rounded-md text-xs tracking-widest transition-all duration-150 outline-none flex-shrink-0',
+                menuOpen
+                  ? 'bg-cyan-500/20 text-cyan-400 ring-1 ring-cyan-500/40'
+                  : 'bg-white/5 hover:bg-cyan-500/10 hover:text-cyan-400',
+              )}
+              style={{ fontFamily: "'JetBrains Mono', monospace" }}
+            >
+              <span style={{ color: '#00d4ff' }}>⬡</span>
+              {!compact && 'LAUNCH'}
+            </button>
+          </DropdownMenu.Trigger>
+
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              side="top"
+              align="start"
+              sideOffset={6}
+              className="outline-none z-[9999] w-56 rounded-xl overflow-hidden"
+              style={{
+                background: 'rgba(6,14,30,0.92)',
+                backdropFilter: 'blur(24px)',
+                border: '1px solid rgba(0,212,255,0.18)',
+                boxShadow: '0 -8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)',
+              }}
+            >
+              {/* Header */}
+              <div
+                className="px-4 py-3 border-b"
+                style={{ borderColor: 'rgba(0,212,255,0.12)' }}
+              >
+                <div
+                  className="text-xs tracking-widest font-bold"
+                  style={{ color: '#00d4ff', fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  OMU/OS
+                </div>
+                <div className="text-[11px] mt-0.5" style={{ color: 'rgba(200,216,232,0.4)' }}>
+                  {PROFILE.handle}
+                </div>
+              </div>
+
+              {/* Items */}
+              <div className="py-1">
+                {DESKTOP_ICONS.map(ic => (
+                  <DropdownMenu.Item
+                    key={ic.id}
+                    onSelect={() => openWindow(ic.id)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-xs cursor-pointer outline-none transition-colors"
+                    style={{ fontFamily: "'JetBrains Mono', monospace", color: 'rgba(200,216,232,0.7)' }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'rgba(0,212,255,0.08)'
+                      e.currentTarget.style.color = '#00d4ff'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'transparent'
+                      e.currentTarget.style.color = 'rgba(200,216,232,0.7)'
+                    }}
+                  >
+                    <OSIcon kind={ic.kind} size={16} color="currentColor" />
+                    {ic.label}
+                  </DropdownMenu.Item>
+                ))}
+              </div>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+
+        {/* Separator */}
+        <div className="w-px h-5 flex-shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+        {/* Open window tabs */}
+        <div className="flex gap-2 flex-1 min-w-0 overflow-x-auto">
           {windows.map(w => (
-            <div
+            <button
               key={w.id}
               onClick={() => focusWindow(w.id)}
+              className={cn(
+                'flex items-center gap-2 px-3 py-1 rounded-md text-xs flex-shrink-0 transition-all duration-150',
+                w.z === zTop
+                  ? 'bg-cyan-500/15 ring-1 ring-cyan-500/30 text-cyan-300'
+                  : 'bg-white/5 text-[rgba(200,216,232,0.5)] hover:bg-white/8 hover:text-[rgba(200,216,232,0.8)]',
+              )}
               style={{
-                background: w.z === zTop ? OS.chromeLite : OS.chrome,
-                color: OS.chromeFg,
-                padding: '4px 10px',
-                border: `1px solid ${OS.ink}`,
-                boxShadow: w.z === zTop
-                  ? `inset 1px 1px 0 ${OS.chromeHi}`
-                  : `inset 1px 1px 0 ${OS.chromeHi}, inset -1px -1px 0 ${OS.ink}`,
-                fontSize: 11,
-                cursor: 'pointer',
-                maxWidth: compact ? 120 : 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                display: 'flex', alignItems: 'center', gap: 6,
-                flex: '0 0 auto',
-              }}>
-              <OSIcon {...ICONS[w.icon]} size={16} />
-              {!compact && <span>{w.title.split('—')[0].trim()}</span>}
-            </div>
+                maxWidth: compact ? 100 : 160,
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+            >
+              <OSIcon kind={w.icon} size={12} color="currentColor" />
+              {!compact && (
+                <span className="truncate">{w.title.split('—')[0].trim()}</span>
+              )}
+            </button>
           ))}
         </div>
-        {!compact && (
-          <div style={{
-            padding: '4px 8px',
-            fontFamily: 'ui-monospace, monospace', fontSize: 11,
-            color: OS.chromeFg,
-          }}>🔋 87%</div>
-        )}
-        <div style={{
-          padding: '4px 8px',
-          fontFamily: 'ui-monospace, monospace', fontSize: 11,
-          color: OS.chromeFg,
-          flex: '0 0 auto',
-        }}>{clock}</div>
       </div>
 
-      {/* Boot splash overlay */}
-      {booting && (
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 999,
-          background: OS.ink, color: OS.chromeFg,
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          gap: 18,
-          fontFamily: '"Press Start 2P", monospace',
-        }}>
-          <div style={{ fontSize: 24, letterSpacing: 3 }}>★ OMU OS</div>
-          <div style={{ fontSize: 10, opacity: 0.7, letterSpacing: 1 }}>v1.0 · OMU EDITION</div>
-          <div style={{
-            width: 240, height: 10,
-            background: OS.chromeLite,
-            border: `1px solid ${OS.chromeFg}`,
-            position: 'relative',
-            marginTop: 12,
-          }}>
-            <div style={{
-              position: 'absolute', left: 0, top: 0, bottom: 0,
-              animation: 'pxbar 1.4s ease-out forwards',
-              background: `repeating-linear-gradient(90deg, ${OS.yellow} 0 4px, ${OS.yellowDark} 4px 6px)`,
-            }} />
-          </div>
-          <div style={{ fontSize: 9, opacity: 0.5, marginTop: 8 }}>loading kernel...</div>
-          <style>{`@keyframes pxbar { from { width: 0 } to { width: 100% } }`}</style>
-        </div>
-      )}
+      {/* Boot splash */}
+      <AnimatePresence>
+        {booting && (
+          <motion.div
+            key="boot"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="absolute inset-0 z-[999] flex flex-col items-center justify-center gap-6"
+            style={{ background: '#050810' }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-3xl font-bold tracking-[0.3em]"
+              style={{ color: '#00d4ff', fontFamily: "'JetBrains Mono', monospace", textShadow: '0 0 40px rgba(0,212,255,0.5)' }}
+            >
+              OMU/OS
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-xs tracking-widest"
+              style={{ color: 'rgba(200,216,232,0.3)', fontFamily: "'JetBrains Mono', monospace" }}
+            >
+              v1.0 · INITIALIZING
+            </motion.div>
+            <div
+              className="w-48 h-px overflow-hidden mt-2"
+              style={{ background: 'rgba(0,212,255,0.1)' }}
+            >
+              <motion.div
+                className="h-full"
+                initial={{ width: 0 }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 1.6, delay: 0.4, ease: 'easeInOut' }}
+                style={{ background: 'linear-gradient(90deg, transparent, #00d4ff, transparent)' }}
+              />
+            </div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.5, 0] }}
+              transition={{ duration: 1.2, delay: 0.6, repeat: 1 }}
+              className="text-[10px]"
+              style={{ color: 'rgba(0,212,255,0.4)', fontFamily: "'JetBrains Mono', monospace" }}
+            >
+              LOADING KERNEL...
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

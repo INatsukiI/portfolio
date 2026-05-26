@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { OS } from '../../theme'
+import { Button } from '@/components/ui/button'
 
 interface OSButtonProps {
   children: ReactNode
@@ -10,18 +10,14 @@ interface OSButtonProps {
 
 export function OSButton({ children, primary, onClick, disabled }: OSButtonProps) {
   return (
-    <button
+    <Button
+      variant={primary ? 'default' : 'outline'}
+      size="sm"
       onClick={onClick}
       disabled={disabled}
-      style={{
-        background: primary ? OS.chrome : OS.bodyEdge,
-        color: primary ? OS.chromeFg : OS.ink,
-        border: 0,
-        padding: '5px 10px',
-        fontFamily: '"DotGothic16", monospace',
-        fontSize: 11,
-        boxShadow: `inset 1px 1px 0 ${primary ? OS.chromeLite : OS.body}, inset -1px -1px 0 ${primary ? '#000' : OS.chrome}, 2px 2px 0 ${OS.shadow}`,
-        cursor: disabled ? 'default' : 'pointer',
-      }}>{children}</button>
+      className="font-mono text-xs tracking-widest"
+    >
+      {children}
+    </Button>
   )
 }
