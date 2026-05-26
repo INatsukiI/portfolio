@@ -16,7 +16,7 @@ export function WinReadme({ onOpen }: WinReadmeProps) {
         ようこそ、{PROFILE.name} のポートフォリオへ。
       </p>
       <p className="text-muted-foreground text-xs mb-5">
-        左のデスクトップアイコンをダブルクリックすると、各セクションがウィンドウで開きます。
+        アイコンをタップ / クリックすると、各セクションがウィンドウで開きます。
       </p>
 
       <SectionHead>quickstart</SectionHead>
@@ -37,7 +37,7 @@ export function WinReadme({ onOpen }: WinReadmeProps) {
 
       <SectionHead>tips</SectionHead>
       <ul className="mt-3 mb-5 space-y-1.5 list-none p-0">
-        {['タイトルバーをドラッグして移動', '× でウィンドウを閉じる', '下のタスクバーから再オープン'].map((tip, i) => (
+        {['アイコンをタップ / クリックしてウィンドウを開く', '× ボタンでウィンドウを閉じる', '下のバーのボタンから再オープン'].map((tip, i) => (
           <li key={i} className="flex gap-2 text-muted-foreground text-xs">
             <span className="text-border">›</span>{tip}
           </li>

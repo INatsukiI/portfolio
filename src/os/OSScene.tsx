@@ -43,7 +43,7 @@ export default function OSScene() {
     setZTop(newZ)
     setWindows((ws) => {
       const ex = ws.find(w => w.id === id)
-      if (ex) return ws.map(w => w.id === id ? { ...w, z: newZ } : w)
+      if (ex) return ws.map(w => w.id === id ? { ...w, z: newZ, minimized: false } : w)
       const d = WIN_DEFAULTS[id]
       if (!d) return ws
       const offset = (ws.length % 5) * 20
