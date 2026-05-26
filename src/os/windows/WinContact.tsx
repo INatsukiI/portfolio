@@ -1,55 +1,40 @@
 import { PROFILE } from '../../profile'
 import { OS } from '../theme'
 import { SectionHead } from '../components/ui/SectionHead'
-import { DataRow } from '../components/ui/DataRow'
-import { OSButton } from '../components/ui/OSButton'
+import { Textarea } from '@/components/ui/textarea'
 
 export function WinContact() {
   const profile = PROFILE
   return (
-    <div>
-      <SectionHead>// mail.app</SectionHead>
-      <div style={{
-        background: OS.bodyAlt, border: `2px solid ${OS.chrome}`,
-        padding: 12, marginTop: 8,
-        boxShadow: `inset 1px 1px 0 ${OS.body}`,
-      }}>
-        <div style={{
-          fontFamily: '"Press Start 2P", monospace', fontSize: 10,
-          marginBottom: 8, letterSpacing: 1,
-        }}>NEW MESSAGE</div>
-        <DataRow label="To"      val={profile.contact[0].val} mono />
-        <DataRow label="From"    val="あなた" mono />
-        <DataRow label="Subject" val="お話ししませんか" mono />
-        <textarea
+    <div className="font-sans text-sm">
+      <SectionHead>links</SectionHead>
+      <div className="mt-3 rounded-md border border-border overflow-hidden">
+        {profile.contact.map((c, i) => (
+          <a
+            key={i}
+            href={`https://${c.val}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex justify-between items-center px-4 py-2.5 transition-colors hover:bg-accent border-b border-border/50 last:border-0 no-underline"
+          >
+            <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">{c.label}</span>
+            <span className="text-primary font-mono text-xs">{c.val}</span>
+          </a>
+        ))}
+      </div>
+
+      <SectionHead style={{ marginTop: 16 }}>contact</SectionHead>
+      <div className="mt-3 rounded-md border border-border bg-card/50 p-4">
+        <div className="font-mono text-[10px] tracking-widest uppercase text-primary mb-3">NEW MESSAGE</div>
+        <div className="text-[11px] text-muted-foreground font-mono mb-2">
+          To: <span className="text-foreground">{profile.contact[0].val}</span>
+        </div>
+        <Textarea
           readOnly
           defaultValue={`${profile.name}さま\n\nポートフォリオを拝見しました。\nぜひ一度お話ししたく…`}
-          style={{
-            width: '100%', minHeight: 90, marginTop: 6,
-            fontFamily: '"DotGothic16", monospace',
-            fontSize: 12, lineHeight: 1.5,
-            border: `1px solid ${OS.chrome}`,
-            background: OS.body, color: OS.ink,
-            padding: 8, resize: 'none', boxSizing: 'border-box',
-          }} />
-        <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
-          <OSButton primary>送信</OSButton>
-          <OSButton>下書き</OSButton>
-        </div>
-      </div>
-      <SectionHead style={{ marginTop: 14 }}>// links</SectionHead>
-      <div style={{ marginTop: 6, border: `1px solid ${OS.chrome}`, background: OS.body }}>
-        {profile.contact.map((c, i) => (
-          <div key={i} style={{
-            display: 'flex', justifyContent: 'space-between',
-            padding: '6px 10px',
-            background: i % 2 ? OS.bodyAlt : OS.body,
-            fontFamily: 'ui-monospace, monospace', fontSize: 12,
-          }}>
-            <span style={{ color: OS.inkSoft }}>{c.label}</span>
-            <span>{c.val}</span>
-          </div>
-        ))}
+          className="font-mono text-xs min-h-[90px] resize-none"
+          style={{ background: 'rgba(0,0,0,0.3)', color: OS.chromeFg }}
+        />
       </div>
     </div>
   )

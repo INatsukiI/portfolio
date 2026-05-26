@@ -6,7 +6,8 @@ export const DESKTOP_ICONS: Array<{ id: string; label: string; kind: IconKey }> 
   { id: 'skills',   label: 'skills.app',  kind: 'skills' },
   { id: 'projects', label: 'projects/',   kind: 'projects' },
   { id: 'career',   label: 'career.log',  kind: 'career' },
-  { id: 'contact',  label: 'mail.app',    kind: 'contact' },
+  { id: 'contact',  label: 'contact.app', kind: 'contact' },
+  { id: 'trash',    label: 'trash',       kind: 'trash' },
 ]
 
 export interface WindowDefault {
@@ -24,10 +25,13 @@ export const WIN_DEFAULTS: Record<string, WindowDefault> = {
   skills:   { title: 'skills.app',              icon: 'skills',   x: 200, y: 80,  w: 540, h: 480 },
   projects: { title: 'projects — フォルダ',     icon: 'projects', x: 160, y: 110, w: 600, h: 440 },
   career:   { title: 'career.log — Terminal',   icon: 'career',   x: 220, y: 90,  w: 580, h: 460 },
-  contact:  { title: 'mail.app',                icon: 'contact',  x: 250, y: 120, w: 520, h: 460 },
+  contact:  { title: 'contact.app',                icon: 'contact',  x: 250, y: 120, w: 520, h: 460 },
+  trash:    { title: 'ゴミ箱',                     icon: 'trash',    x: 300, y: 140, w: 380, h: 260 },
 }
 
 export interface WindowState extends WindowDefault {
   id: string
   z: number
+  minimized?: boolean
+  maximized?: boolean
 }

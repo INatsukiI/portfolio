@@ -85,7 +85,7 @@ export const PROFILE: Profile = {
     { name: 'TypeScript',       lv: 'Lv.2', cat: 'Lang' },
     { name: 'React / Next.js',  lv: 'Lv.2', cat: 'FE' },
     { name: 'Vue.js',           lv: 'Lv.2', cat: 'FE' },
-    { name: 'Go',               lv: 'Lv.1', cat: 'BE' },
+    { name: 'Echo / Go',        lv: 'Lv.1', cat: 'BE' },
     { name: 'Laravel / PHP',    lv: 'Lv.1', cat: 'BE' },
     { name: 'Spring / Kotlin',  lv: 'Lv.4', cat: 'BE' },
     { name: 'Flutter / Dart',   lv: 'Lv.1', cat: 'Mobile' },
@@ -97,8 +97,8 @@ export const PROFILE: Profile = {
   history: [
     {
       year: '2023-2024',
-      title: '古都で修行',
-      org:   '京都 ベンチャー企業（アルバイト）',
+      title: '古都のベンチャー企業で修行',
+      org:   '京都（アルバイト: フロントエンド・バックエンドエンジニア）',
       body:  'Vue(TypeScript) Webフロント開発 4.5ヶ月、Flutter(Dart) + Laravel(PHP) ネイティブアプリ開発 7.5ヶ月、Flutter(Dart) + Echo(Go) ネイティブアプリ開発 1ヶ月。',
     },
     {

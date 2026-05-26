@@ -19,7 +19,7 @@ export function useContainerSize(ref: RefObject<HTMLDivElement | null>): { w: nu
       window.addEventListener('resize', measure)
       return () => window.removeEventListener('resize', measure)
     }
-  }, [])
+  }, [ref])
   return size
 }
 
