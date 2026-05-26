@@ -38,6 +38,7 @@ npm run preview    # ビルド成果物をローカルで確認
 ## ルール
 
 - コードを変更したら必ず `npm run check` を実行し、エラーゼロを確認してから作業完了とすること。
+- コードをコミットする際はブランチを確認して、mainにいる場合はfeature/xxxのブランチを切ってコミットすること。
 - `package.json` を変更したら `npm install` を実行して `package-lock.json` を同期すること。
 - UI に関わる変更は、ブラウザプレビュー（`preview_start` → `preview_screenshot`）で目視確認してから完了とすること。
 - スタック・ディレクトリ構成・コーディング規約が変わったら、このファイル（CLAUDE.md）を都度更新すること。
