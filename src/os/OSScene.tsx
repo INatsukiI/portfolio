@@ -17,6 +17,19 @@ import { WinReadme } from './windows/WinReadme'
 import { WinTrash } from './windows/WinTrash'
 import { cn } from '@/lib/utils'
 
+const DESKTOP_STYLE = {
+  background: '#080c14',
+  backgroundImage: `
+    radial-gradient(circle at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(100,50,255,0.04) 0%, transparent 50%),
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px)
+  `,
+  backgroundSize: '100% 100%, 100% 100%, 40px 40px, 40px 40px',
+  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+  color: '#c8d8e8',
+} as const
+
 export default function OSScene() {
   const screenRef = useRef<HTMLDivElement>(null)
   const { w: cw } = useContainerSize(screenRef)
@@ -64,23 +77,23 @@ export default function OSScene() {
   const maximizeWindow = (id: string) =>
     setWindows(ws => ws.map(w => w.id === id ? { ...w, maximized: !w.maximized } : w))
 
+  const renderWindowContent = (w: WindowState) => {
+    if (w.id === 'readme')   return <WinReadme onOpen={openWindow} />
+    if (w.id === 'about')    return <WinAbout />
+    if (w.id === 'skills')   return <WinSkills />
+    if (w.id === 'projects') return <WinProjects />
+    if (w.id === 'career')   return <WinCareer />
+    if (w.id === 'contact')  return <WinContact />
+    if (w.id === 'trash')    return <WinTrash />
+    return null
+  }
+
   return (
     <div
       ref={screenRef}
       onClick={(e) => { if (e.target === screenRef.current) setSelectedIcon(null) }}
       className="relative w-full h-full overflow-hidden select-none"
-      style={{
-        background: '#080c14',
-        backgroundImage: `
-          radial-gradient(circle at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 50%),
-          radial-gradient(circle at 80% 80%, rgba(100,50,255,0.04) 0%, transparent 50%),
-          linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px)
-        `,
-        backgroundSize: '100% 100%, 100% 100%, 40px 40px, 40px 40px',
-        fontFamily: "'Space Grotesk', system-ui, sans-serif",
-        color: '#c8d8e8',
-      }}
+      style={DESKTOP_STYLE}
     >
       {/* Top bar */}
       <div
@@ -98,7 +111,7 @@ export default function OSScene() {
         >
           OMU/OS
         </div>
-        {!compact && (
+        {compact ? null : (
           <div className="flex items-center gap-6 ml-8 text-xs" style={{ color: 'rgba(200,216,232,0.45)' }}>
             {['FILE', 'EDIT', 'VIEW', 'WINDOW'].map(m => (
               <span key={m} className="hover:text-cyan-400 cursor-default transition-colors">{m}</span>
@@ -106,7 +119,7 @@ export default function OSScene() {
           </div>
         )}
         <div className="ml-auto flex items-center gap-4 text-xs" style={{ fontFamily: "'JetBrains Mono', monospace", color: 'rgba(200,216,232,0.45)' }}>
-          {!compact && <span>{PROFILE.handle}</span>}
+          {compact ? null : <span>{PROFILE.handle}</span>}
           <span style={{ color: '#00d4ff' }}>{clock}</span>
         </div>
       </div>
@@ -135,7 +148,7 @@ export default function OSScene() {
       </div>
 
       {/* System info panel — desktop only */}
-      {!compact && (
+      {compact ? null : (
         <div
           className="absolute top-12 right-3 z-[1] w-48 rounded-lg p-3 text-xs"
           style={{
@@ -184,13 +197,7 @@ export default function OSScene() {
             onMinimize={() => minimizeWindow(w.id)}
             onMaximize={() => maximizeWindow(w.id)}
           >
-            {w.id === 'readme'   && <WinReadme onOpen={openWindow} />}
-            {w.id === 'about'    && <WinAbout />}
-            {w.id === 'skills'   && <WinSkills />}
-            {w.id === 'projects' && <WinProjects />}
-            {w.id === 'career'   && <WinCareer />}
-            {w.id === 'contact'  && <WinContact />}
-            {w.id === 'trash'    && <WinTrash />}
+            {renderWindowContent(w)}
           </OSWindow>
         ))}
       </AnimatePresence>
@@ -218,7 +225,7 @@ export default function OSScene() {
               style={{ fontFamily: "'JetBrains Mono', monospace" }}
             >
               <span style={{ color: '#00d4ff' }}>⬡</span>
-              {!compact && 'LAUNCH'}
+              {compact ? null : 'LAUNCH'}
             </button>
           </DropdownMenu.Trigger>
 
@@ -298,7 +305,7 @@ export default function OSScene() {
               }}
             >
               <OSIcon kind={w.icon} size={12} color="currentColor" />
-              {!compact && (
+              {compact ? null : (
                 <span className="truncate">{w.title.split('—')[0].trim()}</span>
               )}
             </button>
@@ -308,7 +315,7 @@ export default function OSScene() {
 
       {/* Boot splash */}
       <AnimatePresence>
-        {booting && (
+        {booting ? (
           <motion.div
             key="boot"
             initial={{ opacity: 1 }}
@@ -357,7 +364,7 @@ export default function OSScene() {
               LOADING KERNEL...
             </motion.div>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
     </div>
   )
