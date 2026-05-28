@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { DropdownMenu } from 'radix-ui'
 import { PROFILE } from '../profile'
@@ -8,15 +8,14 @@ import { DESKTOP_ICONS, WIN_DEFAULTS } from './constants'
 import type { WindowState } from './constants'
 import { DesktopIcon } from './components/DesktopIcon'
 import { OSWindow } from './components/OSWindow'
+import { WinAbout } from './windows/WinAbout'
+import { WinSkills } from './windows/WinSkills'
+import { WinProjects } from './windows/WinProjects'
+import { WinCareer } from './windows/WinCareer'
+import { WinContact } from './windows/WinContact'
+import { WinReadme } from './windows/WinReadme'
+import { WinTrash } from './windows/WinTrash'
 import { cn } from '@/lib/utils'
-
-const WinAbout    = lazy(() => import('./windows/WinAbout').then(m => ({ default: m.WinAbout })))
-const WinSkills   = lazy(() => import('./windows/WinSkills').then(m => ({ default: m.WinSkills })))
-const WinProjects = lazy(() => import('./windows/WinProjects').then(m => ({ default: m.WinProjects })))
-const WinCareer   = lazy(() => import('./windows/WinCareer').then(m => ({ default: m.WinCareer })))
-const WinContact  = lazy(() => import('./windows/WinContact').then(m => ({ default: m.WinContact })))
-const WinReadme   = lazy(() => import('./windows/WinReadme').then(m => ({ default: m.WinReadme })))
-const WinTrash    = lazy(() => import('./windows/WinTrash').then(m => ({ default: m.WinTrash })))
 
 const DESKTOP_STYLE = {
   background: '#080c14',
@@ -198,9 +197,7 @@ export default function OSScene() {
             onMinimize={() => minimizeWindow(w.id)}
             onMaximize={() => maximizeWindow(w.id)}
           >
-            <Suspense fallback={null}>
-              {renderWindowContent(w)}
-            </Suspense>
+            {renderWindowContent(w)}
           </OSWindow>
         ))}
       </AnimatePresence>
