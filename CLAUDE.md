@@ -20,7 +20,7 @@
 | スタイリング | Tailwind CSS v4（`@tailwindcss/vite`）+ インラインスタイル併用 |
 | アイコン | lucide-react |
 | フォント | JetBrains Mono / Space Grotesk（Google Fonts） |
-| テスト | 未導入（将来 Vitest を想定） |
+| テスト | Vitest + @testing-library/react |
 | デプロイ | 静的ホスティング（GitHub Pages / Netlify / Vercel） |
 
 ---
@@ -28,11 +28,13 @@
 ## 開発コマンド
 
 ```bash
-npm run dev        # 開発サーバー起動 → http://localhost:5173
-npm run build      # 本番ビルド（型エラーも検出される）
-npm run lint       # ESLint チェック
-npm run check      # lint + build を一括実行（修正後は必ずこれを通す）
-npm run preview    # ビルド成果物をローカルで確認
+npm run dev          # 開発サーバー起動 → http://localhost:5173
+npm run build        # 本番ビルド（型エラーも検出される）
+npm run lint         # ESLint チェック
+npm run check        # lint + build を一括実行（修正後は必ずこれを通す）
+npm run preview      # ビルド成果物をローカルで確認
+npm run test         # テスト一括実行（vitest run）
+npm run test:watch   # テストウォッチモード（開発中）
 ```
 
 ## ルール
