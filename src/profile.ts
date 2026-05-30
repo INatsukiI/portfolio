@@ -48,6 +48,7 @@ export interface Profile {
   location: string
   tagline: string
   bio: string
+  email: string
   stats: Stat[]
   skills: Skill[]
   history: HistoryItem[]
@@ -80,6 +81,7 @@ export const PROFILE: Profile = {
   location: '東京',
   tagline:  '「ものをつくり、人にとどける。」',
   bio:      'Webサービスの設計から実装、運用までを一貫してこなすエンジニア。',
+  email:    'n.omura5517@gmail.com',
 
   // ─── ステータス（バー表示）────────────────────────
   // color は HEX を直接指定。OS のアクセントカラーから選ぶと馴染みます。
