@@ -40,11 +40,21 @@ export default function OSScene() {
   const [booting, setBooting] = useState(true)
   const [clock, setClock] = useState(currentClock())
   const [menuOpen, setMenuOpen] = useState(false)
+  const readmeCentered = useRef(false)
 
   useEffect(() => {
     const t = setTimeout(() => setBooting(false), 2000)
     return () => clearTimeout(t)
   }, [])
+
+  // 初回マウント後に実際のコンテナ幅が確定したら readme を水平中央へ移動（一度だけ）
+  useEffect(() => {
+    if (readmeCentered.current) return
+    readmeCentered.current = true
+    const d = WIN_DEFAULTS.readme
+    const cx = Math.max(0, Math.floor((cw - d.w) / 2))
+    setWindows(ws => ws.map(w => w.id === 'readme' ? { ...w, x: cx } : w))
+  }, [cw])
 
   useEffect(() => {
     const i = setInterval(() => setClock(currentClock()), 30000)
