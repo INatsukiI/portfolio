@@ -32,7 +32,7 @@ const DESKTOP_STYLE = {
 
 export default function OSScene() {
   const screenRef = useRef<HTMLDivElement>(null)
-  const { w: cw } = useContainerSize(screenRef)
+  const { w: cw, h: ch } = useContainerSize(screenRef)
   const compact = cw < 720
   const [windows, setWindows] = useState<WindowState[]>([{ id: 'readme', ...WIN_DEFAULTS.readme, z: 11 }])
   const [zTop, setZTop] = useState(11)
@@ -60,7 +60,12 @@ export default function OSScene() {
       const d = WIN_DEFAULTS[id]
       if (!d) return ws
       const offset = (ws.length % 5) * 20
-      return [...ws, { id, ...d, x: d.x + offset, y: d.y + offset, z: newZ }]
+      const topBar    = compact ? 36 : 40
+      const bottomBar = 52
+      // 横: 画面中央、縦: トップバー〜タスクバー間の中央
+      const cx = Math.max(0, Math.floor((cw - d.w) / 2))
+      const cy = Math.max(topBar + 8, Math.floor(topBar + (ch - topBar - bottomBar - d.h) / 2))
+      return [...ws, { id, ...d, x: cx + offset, y: cy + offset, z: newZ }]
     })
   }
 
