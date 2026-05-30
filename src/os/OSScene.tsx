@@ -60,12 +60,9 @@ export default function OSScene() {
       const d = WIN_DEFAULTS[id]
       if (!d) return ws
       const offset = (ws.length % 5) * 20
-      const topBar    = compact ? 36 : 40
-      const bottomBar = 52
-      // 横: 画面中央、縦: トップバー〜タスクバー間の中央
+      // 横: 画面中央、縦: WIN_DEFAULTS の値をそのまま使用
       const cx = Math.max(0, Math.floor((cw - d.w) / 2))
-      const cy = Math.max(topBar + 8, Math.floor(topBar + (ch - topBar - bottomBar - d.h) / 2))
-      return [...ws, { id, ...d, x: cx + offset, y: cy + offset, z: newZ }]
+      return [...ws, { id, ...d, x: cx + offset, y: d.y + offset, z: newZ }]
     })
   }
 
@@ -75,8 +72,18 @@ export default function OSScene() {
     setZTop(newZ)
     setWindows(ws => ws.map(w => w.id === id ? { ...w, z: newZ, minimized: false } : w))
   }
-  const moveWindow = (id: string, x: number, y: number) =>
-    setWindows(ws => ws.map(w => w.id === id ? { ...w, x, y } : w))
+  const moveWindow = (id: string, x: number, y: number) => {
+    const topBar    = compact ? 36 : 40
+    const bottomBar = 52
+    const TITLE_H   = 44   // タイトルバーの高さ目安
+    const MARGIN    = 80   // 画面端に残す最小幅
+    setWindows(ws => ws.map(w => {
+      if (w.id !== id) return w
+      const cx = Math.max(-(w.w - MARGIN), Math.min(cw - MARGIN, x))
+      const cy = Math.max(topBar, Math.min(ch - bottomBar - TITLE_H, y))
+      return { ...w, x: cx, y: cy }
+    }))
+  }
   const minimizeWindow = (id: string) =>
     setWindows(ws => ws.map(w => w.id === id ? { ...w, minimized: true } : w))
   const maximizeWindow = (id: string) =>
