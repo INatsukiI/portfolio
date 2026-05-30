@@ -25,6 +25,14 @@ export interface Achievement {
   year: string
 }
 
+export interface Project {
+  name: string
+  desc: string
+  tech: string[]
+  url?: string
+  status: 'live' | 'wip' | 'archived'
+}
+
 export interface Contact {
   label: string
   val: string
@@ -44,6 +52,7 @@ export interface Profile {
   skills: Skill[]
   history: HistoryItem[]
   achievements: Achievement[]
+  projects: Project[]
   contact: Contact[]
 }
 
@@ -112,6 +121,17 @@ export const PROFILE: Profile = {
   // ─── クエスト達成（実績）─────────────────────────
   achievements: [
     { name: 'AWS SAA 合格',     year: '2025' },
+  ],
+
+  // ─── 制作物 ───────────────────────────────────────
+  projects: [
+    {
+      name: 'OMU/OS',
+      desc: '近未来ダークデスクトップOS風ポートフォリオサイト。',
+      tech: ['React', 'TypeScript', 'Vite', 'Tailwind CSS', 'Framer Motion'],
+      url: 'https://github.com/INatsukiI/portfolio',
+      status: 'live',
+    },
   ],
 
   // ─── 連絡先 / SNS ───────────────────────────────
