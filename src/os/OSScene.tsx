@@ -34,27 +34,22 @@ export default function OSScene() {
   const screenRef = useRef<HTMLDivElement>(null)
   const { w: cw, h: ch } = useContainerSize(screenRef)
   const compact = cw < 720
-  const [windows, setWindows] = useState<WindowState[]>([{ id: 'readme', ...WIN_DEFAULTS.readme, z: 11 }])
+  // window.innerWidth は同期で取れるので lazy initializer で中央 x を計算
+  const [windows, setWindows] = useState<WindowState[]>(() => {
+    const d = WIN_DEFAULTS.readme
+    const cx = Math.max(0, Math.floor((window.innerWidth - d.w) / 2))
+    return [{ id: 'readme', ...d, x: cx, z: 11 }]
+  })
   const [zTop, setZTop] = useState(11)
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   const [booting, setBooting] = useState(true)
   const [clock, setClock] = useState(currentClock())
   const [menuOpen, setMenuOpen] = useState(false)
-  const readmeCentered = useRef(false)
 
   useEffect(() => {
     const t = setTimeout(() => setBooting(false), 2000)
     return () => clearTimeout(t)
   }, [])
-
-  // 初回マウント後に実際のコンテナ幅が確定したら readme を水平中央へ移動（一度だけ）
-  useEffect(() => {
-    if (readmeCentered.current) return
-    readmeCentered.current = true
-    const d = WIN_DEFAULTS.readme
-    const cx = Math.max(0, Math.floor((cw - d.w) / 2))
-    setWindows(ws => ws.map(w => w.id === 'readme' ? { ...w, x: cx } : w))
-  }, [cw])
 
   useEffect(() => {
     const i = setInterval(() => setClock(currentClock()), 30000)
