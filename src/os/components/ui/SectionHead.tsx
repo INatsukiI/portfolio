@@ -14,7 +14,7 @@ export function SectionHead({ children, style, className }: SectionHeadProps) {
       className={cn('flex items-center gap-2 font-mono text-[10px] tracking-widest uppercase mt-1', className)}
       style={style}
     >
-      <span className="text-muted-foreground">//</span>
+      <span className="text-muted-foreground">&gt;</span>
       <span className="text-primary">{children}</span>
       <Separator className="flex-1" />
     </div>

@@ -18,6 +18,8 @@ export interface WindowDefault {
   y: number
   w: number
   h: number
+  /** 水平配置のヒント: 'center'（デフォルト）/ 'left' / 'right' */
+  xAlign?: 'left' | 'center' | 'right'
 }
 
 export const WIN_DEFAULTS: Record<string, WindowDefault> = {
@@ -27,7 +29,7 @@ export const WIN_DEFAULTS: Record<string, WindowDefault> = {
   projects: { title: 'projects — フォルダ',     icon: 'projects', x: 160, y: 110, w: 600, h: 440 },
   career:   { title: 'career.log — Terminal',   icon: 'career',   x: 220, y: 90,  w: 580, h: 460 },
   contact:  { title: 'contact.app',                icon: 'contact',  x: 250, y: 120, w: 520, h: 460 },
-  zenn:     { title: 'zenn.dev — 記事一覧',        icon: 'zenn',     x: 240, y: 80,  w: 560, h: 500 },
+  zenn:     { title: 'zenn.dev — 記事一覧',        icon: 'zenn',     x: 240, y: 80,  w: 560, h: 500, xAlign: 'right' },
   trash:    { title: 'ゴミ箱',                     icon: 'trash',    x: 300, y: 140, w: 380, h: 260 },
 }
 

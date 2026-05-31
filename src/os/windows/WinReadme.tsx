@@ -26,7 +26,8 @@ export function WinReadme({ onOpen }: WinReadmeProps) {
           { id: 'skills',   label: 'skills.app',  desc: 'スキルと得意分野' },
           { id: 'projects', label: 'projects/',    desc: '制作物の一覧' },
           { id: 'career',   label: 'career.log',  desc: '職歴' },
-          { id: 'contact',  label: 'contact.app',    desc: '連絡先・SNS' },
+          { id: 'contact',  label: 'contact.app', desc: '連絡先・SNS' },
+          { id: 'zenn',     label: 'zenn.dev/',   desc: 'Zenn 記事一覧' },
         ].map(item => (
           <li key={item.id} className="flex gap-3 items-baseline">
             <span className="text-primary font-mono text-xs min-w-[90px]">{item.label}</span>
