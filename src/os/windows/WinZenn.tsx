@@ -29,13 +29,19 @@ const formatDate = (iso: string) => {
 
 export function WinZenn() {
   const [articles, setArticles] = useState<ZennArticle[]>([])
-  const [loading, setLoading]   = useState(true)   // 初期値 true でフェッチ開始を表現
-  const [error, setError]       = useState(false)
+  const [loading, setLoading]     = useState(true)   // 初回ロード（記事なし状態）のみ true
+  const [refreshing, setRefreshing] = useState(false) // 再フェッチ中（記事を保持したまま）
+  const [error, setError]         = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
   // リフレッシュはイベントハンドラなので setState 直呼び OK
   const refresh = () => {
-    setLoading(true)
+    // 記事が既にある場合はソフトリフレッシュ（記事を残したままスピナー表示）
+    if (articles.length > 0) {
+      setRefreshing(true)
+    } else {
+      setLoading(true)
+    }
     setError(false)
     setRefreshKey(k => k + 1)
   }
@@ -54,12 +60,14 @@ export function WinZenn() {
         if (!cancelled) {
           setArticles(data.articles ?? [])
           setLoading(false)
+          setRefreshing(false)
         }
       })
       .catch(() => {
         if (!cancelled) {
           setError(true)
           setLoading(false)
+          setRefreshing(false)
         }
       })
     return () => { cancelled = true }
@@ -77,16 +85,16 @@ export function WinZenn() {
         </SectionHead>
         <button
           onClick={refresh}
-          disabled={loading}
+          disabled={loading || refreshing}
           className="flex items-center gap-1 font-mono text-[10px] tracking-widest transition-opacity hover:opacity-70 disabled:opacity-30"
           style={{ color: OS.inkSoft }}
         >
-          <RefreshCw size={10} className={loading ? 'animate-spin' : ''} />
+          <RefreshCw size={10} className={loading || refreshing ? 'animate-spin' : ''} />
           REFRESH
         </button>
       </div>
 
-      {/* ローディング */}
+      {/* 初回ローディング（記事なし） */}
       {loading && (
         <div className="flex flex-col gap-2 mt-1">
           {[...Array(4)].map((_, i) => (
@@ -131,16 +139,30 @@ export function WinZenn() {
         </div>
       )}
 
-      {/* 記事一覧 */}
+      {/* 記事一覧（初回ロード完了 or ソフトリフレッシュ中） */}
       {!loading && !error && (
-        <>
-          {articles.length === 0 ? (
-            <p className="font-mono text-[11px]" style={{ color: OS.inkSoft }}>
-              // 記事が見つかりませんでした
-            </p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {articles.map((a) => (
+        <div className="relative">
+          {/* ソフトリフレッシュ中のオーバーレイ */}
+          {refreshing && (
+            <div
+              className="absolute inset-0 z-10 flex items-center justify-center rounded-lg"
+              style={{ background: 'rgba(8,20,40,0.75)' }}
+            >
+              <RefreshCw size={20} className="animate-spin" style={{ color: OS.accent }} />
+            </div>
+          )}
+
+          {/* 記事リスト本体（リフレッシュ中は薄く） */}
+          <div
+            className="flex flex-col gap-2 transition-opacity duration-200"
+            style={{ opacity: refreshing ? 0.4 : 1 }}
+          >
+            {articles.length === 0 ? (
+              <p className="font-mono text-[11px]" style={{ color: OS.inkSoft }}>
+                // 記事が見つかりませんでした
+              </p>
+            ) : (
+              articles.map((a) => (
                 <a
                   key={a.id}
                   href={`https://zenn.dev${a.path}`}
@@ -193,10 +215,10 @@ export function WinZenn() {
                     </div>
                   </div>
                 </a>
-              ))}
-            </div>
-          )}
-        </>
+              ))
+            )}
+          </div>
+        </div>
       )}
     </div>
   )
