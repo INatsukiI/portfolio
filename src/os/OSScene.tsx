@@ -15,6 +15,7 @@ import { WinCareer } from './windows/WinCareer'
 import { WinContact } from './windows/WinContact'
 import { WinReadme } from './windows/WinReadme'
 import { WinTrash } from './windows/WinTrash'
+import { WinZenn } from './windows/WinZenn'
 import { cn } from '@/lib/utils'
 
 const DESKTOP_STYLE = {
@@ -102,6 +103,7 @@ export default function OSScene() {
     if (w.id === 'career')   return <WinCareer />
     if (w.id === 'contact')  return <WinContact />
     if (w.id === 'trash')    return <WinTrash />
+    if (w.id === 'zenn')     return <WinZenn />
     return null
   }
 
