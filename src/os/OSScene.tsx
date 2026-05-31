@@ -15,6 +15,7 @@ import { WinCareer } from './windows/WinCareer'
 import { WinContact } from './windows/WinContact'
 import { WinReadme } from './windows/WinReadme'
 import { WinTrash } from './windows/WinTrash'
+import { WinZenn } from './windows/WinZenn'
 import { cn } from '@/lib/utils'
 
 const DESKTOP_STYLE = {
@@ -65,9 +66,21 @@ export default function OSScene() {
       const d = WIN_DEFAULTS[id]
       if (!d) return ws
       const offset = (ws.length % 5) * 20
-      // 横: 画面中央、縦: WIN_DEFAULTS の値をそのまま使用
-      const cx = Math.max(0, Math.floor((cw - d.w) / 2))
-      return [...ws, { id, ...d, x: cx + offset, y: d.y + offset, z: newZ }]
+      // xAlign に応じて基準 x を決める（right: 画面右端寄り、left: サイドバー右、center: 中央）
+      const EDGE = 16
+      const SIDEBAR = compact ? 0 : 160
+      let baseX: number
+      if (d.xAlign === 'right') {
+        baseX = Math.max(0, cw - d.w - EDGE)
+      } else if (d.xAlign === 'left') {
+        baseX = SIDEBAR + EDGE
+      } else {
+        baseX = Math.max(0, Math.floor((cw - d.w) / 2))
+      }
+      // right/left 寄せの場合は x 方向のオフセットを小さめに抑える
+      const xOff = d.xAlign && d.xAlign !== 'center' ? Math.min(offset, 10) : offset
+      const finalX = Math.max(0, Math.min(cw - EDGE, baseX + xOff))
+      return [...ws, { id, ...d, x: finalX, y: d.y + offset, z: newZ }]
     })
   }
 
@@ -102,6 +115,7 @@ export default function OSScene() {
     if (w.id === 'career')   return <WinCareer />
     if (w.id === 'contact')  return <WinContact />
     if (w.id === 'trash')    return <WinTrash />
+    if (w.id === 'zenn')     return <WinZenn />
     return null
   }
 

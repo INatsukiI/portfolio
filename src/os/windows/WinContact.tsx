@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GitFork, AtSign, BookOpen, ExternalLink, Send, Mail } from 'lucide-react'
+import { GitFork, AtSign, ExternalLink, Send, Mail } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PROFILE } from '../../profile'
 import { OS } from '../theme'
@@ -10,9 +10,8 @@ import { Button } from '@/components/ui/button'
 
 // contact[].key → lucide アイコンのマッピング
 const LINK_ICON: Record<string, LucideIcon> = {
-  gh:   GitFork,
-  x:    AtSign,
-  zenn: BookOpen,
+  gh: GitFork,
+  x:  AtSign,
 }
 
 const INPUT_CLASS =
@@ -78,7 +77,7 @@ export function WinContact() {
       <div>
         <SectionHead>links/</SectionHead>
         <div className="mt-3 rounded-md border border-border overflow-hidden">
-          {contact.map((c) => {
+          {contact.filter(c => c.key !== 'zenn').map((c) => {
             const Icon = LINK_ICON[c.key] ?? ExternalLink
             return (
               <a

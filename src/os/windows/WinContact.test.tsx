@@ -8,7 +8,8 @@ describe('WinContact', () => {
     render(<WinContact />)
     expect(screen.getByText('github.com/INatsukiI')).toBeTruthy()
     expect(screen.getByText('x.com/ooooomuu')).toBeTruthy()
-    expect(screen.getByText('zenn.dev/ooooomu')).toBeTruthy()
+    // zenn は専用ウィンドウ（zenn.dev/）に分離したため contact には表示しない
+    expect(screen.queryByText('zenn.dev/ooooomu')).toBeNull()
   })
 
   it('To フィールドにメールアドレスが表示される', () => {
