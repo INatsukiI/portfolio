@@ -9,6 +9,10 @@ interface TermLine {
 }
 
 const PROMPT = 'omu@OMU/OS:~$'
+const MAX_LINES = 500
+
+const trim = (lines: TermLine[]) =>
+  lines.length > MAX_LINES ? lines.slice(lines.length - MAX_LINES) : lines
 
 const LS_FILES = [
   'about.txt', 'skills.txt', 'projects.txt',
@@ -106,24 +110,24 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
   ])
   const [input, setInput]     = useState('')
   const [histIdx, setHistIdx] = useState(-1)
-  const cmdHistory = useRef<string[]>([])
-  const bottomRef  = useRef<HTMLDivElement>(null)
-  const inputRef   = useRef<HTMLInputElement>(null)
+  const cmdHistory   = useRef<string[]>([])
+  const containerRef = useRef<HTMLDivElement>(null)
+  const inputRef     = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = containerRef.current
+    if (el) el.scrollTop = el.scrollHeight
   }, [lines])
 
   const pushLines = useCallback((newLines: string[], type: TermLine['type'] = 'output') => {
-    setLines(prev => [...prev, ...newLines.map(text => ({ type, text }))])
+    setLines(prev => trim([...prev, ...newLines.map(text => ({ type, text }))]))
   }, [])
 
   const runCommand = useCallback((raw: string) => {
     const trimmed = raw.trim()
     if (!trimmed) return
 
-    // 入力行を履歴に追加
-    setLines(prev => [...prev, { type: 'input', text: `${PROMPT} ${trimmed}` }])
+    setLines(prev => trim([...prev, { type: 'input', text: `${PROMPT} ${trimmed}` }]))
     cmdHistory.current = [trimmed, ...cmdHistory.current.slice(0, 49)]
     setHistIdx(-1)
 
@@ -204,41 +208,33 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
 
   return (
     <div
-      className="h-full flex flex-col font-mono text-xs"
+      ref={containerRef}
+      className="h-full overflow-hidden p-3 font-mono text-xs"
       style={{ background: 'rgba(4,10,20,0.95)', color: OS.chromeFg }}
       onClick={() => inputRef.current?.focus()}
     >
-      {/* 出力エリア */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-0.5 no-scrollbar">
-        {lines.map((line, i) => (
-          <div
-            key={i}
-            className="leading-5 whitespace-pre-wrap break-all"
-            style={{
-              color: line.type === 'input' ? OS.accent
-                   : line.type === 'error' ? OS.red
-                   : OS.chromeFg,
-            }}
-          >
-            {line.text}
-          </div>
-        ))}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* 入力行 */}
-      <div
-        className="flex items-center gap-2 px-3 py-2 border-t shrink-0"
-        style={{ borderColor: OS.bodyEdge }}
-      >
-        <span style={{ color: OS.accent, whiteSpace: 'nowrap' }}>{PROMPT}</span>
+      {lines.map((line, i) => (
+        <div
+          key={i}
+          className="leading-5 whitespace-pre-wrap break-all"
+          style={{
+            color: line.type === 'input' ? OS.accent
+                 : line.type === 'error' ? OS.red
+                 : OS.chromeFg,
+          }}
+        >
+          {line.text}
+        </div>
+      ))}
+      <div className="leading-5 flex">
+        <span style={{ color: OS.accent, whiteSpace: 'nowrap' }}>{PROMPT}&nbsp;</span>
         <input
           ref={inputRef}
           autoFocus
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent outline-none caret-cyan-400"
+          className="flex-1 bg-transparent outline-none caret-cyan-400 min-w-0"
           style={{ color: OS.chromeFg }}
           spellCheck={false}
           autoComplete="off"

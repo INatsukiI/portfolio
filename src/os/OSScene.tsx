@@ -225,6 +225,7 @@ export default function OSScene() {
             key={w.id}
             {...w}
             compact={compact}
+            plain={w.id === 'terminal'}
             onClose={() => closeWindow(w.id)}
             onFocus={() => focusWindow(w.id)}
             onMove={(x, y) => moveWindow(w.id, x, y)}

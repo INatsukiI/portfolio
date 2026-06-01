@@ -21,9 +21,11 @@ interface OSWindowProps {
   onMinimize: () => void
   onMaximize: () => void
   children: ReactNode
+  /** padding なし・overflow hidden にする（ターミナルなど自前でスクロール管理するコンテンツ用） */
+  plain?: boolean
 }
 
-export function OSWindow({ title, x, y, w, z, compact, maximized, onClose, onFocus, onMove, onMinimize, onMaximize, children }: OSWindowProps) {
+export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, onFocus, onMove, onMinimize, onMaximize, children, plain }: OSWindowProps) {
   const startDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (compact || maximized) return
     e.preventDefault()
@@ -49,7 +51,7 @@ export function OSWindow({ title, x, y, w, z, compact, maximized, onClose, onFoc
     width: 'auto',
   } : {
     position: 'absolute',
-    left: x, top: y, width: w, maxHeight: '88%',
+    left: x, top: y, width: w, ...(plain && h && { height: h }),
   }
 
   return (
@@ -123,7 +125,7 @@ export function OSWindow({ title, x, y, w, z, compact, maximized, onClose, onFoc
 
         {/* Content */}
         <div
-          className="flex-1 min-h-0 overflow-auto p-5"
+          className={cn('flex-1 min-h-0', plain ? 'overflow-hidden' : 'overflow-auto p-5')}
           style={{
             fontSize: compact ? 12 : 13,
             lineHeight: 1.7,
