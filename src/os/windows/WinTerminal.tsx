@@ -108,8 +108,9 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
     { type: 'output', text: `OMU/OS terminal ${OS_VERSION} — type "help" for available commands.` },
     { type: 'output', text: '' },
   ])
-  const [input, setInput]     = useState('')
-  const [histIdx, setHistIdx] = useState(-1)
+  const [input, setInput]       = useState('')
+  const [cursorPos, setCursorPos] = useState(0)
+  const [histIdx, setHistIdx]   = useState(-1)
   const cmdHistory   = useRef<string[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef     = useRef<HTMLInputElement>(null)
@@ -189,21 +190,42 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
     pushLines([''])
   }, [onOpen, pushLines])
 
+  const syncCursor = (el: HTMLInputElement) => {
+    setCursorPos(el.selectionStart ?? el.value.length)
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value)
+    setCursorPos(e.target.selectionStart ?? e.target.value.length)
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       runCommand(input)
       setInput('')
+      setCursorPos(0)
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       const next = Math.min(histIdx + 1, cmdHistory.current.length - 1)
       setHistIdx(next)
-      setInput(cmdHistory.current[next] ?? '')
+      const val = cmdHistory.current[next] ?? ''
+      setInput(val)
+      setCursorPos(val.length)
     } else if (e.key === 'ArrowDown') {
       e.preventDefault()
       const next = histIdx - 1
-      if (next < 0) { setHistIdx(-1); setInput('') }
-      else { setHistIdx(next); setInput(cmdHistory.current[next] ?? '') }
+      if (next < 0) { setHistIdx(-1); setInput(''); setCursorPos(0) }
+      else {
+        setHistIdx(next)
+        const val = cmdHistory.current[next] ?? ''
+        setInput(val)
+        setCursorPos(val.length)
+      }
     }
+  }
+
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    syncCursor(e.currentTarget)
   }
 
   return (
@@ -226,16 +248,29 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
           {line.text}
         </div>
       ))}
-      <div className="leading-5 flex">
+      <div className="leading-5 flex items-center relative">
         <span style={{ color: OS.accent, whiteSpace: 'nowrap' }}>{PROMPT}&nbsp;</span>
+        <span style={{ color: OS.chromeFg, whiteSpace: 'pre' }}>{input.slice(0, cursorPos)}</span>
+        <span
+          className="terminal-cursor"
+          style={{
+            '--cursor-on-bg': OS.accent,
+            '--cursor-on-fg': 'rgba(4,10,20,0.95)',
+            '--cursor-off-fg': OS.chromeFg,
+            whiteSpace: 'pre',
+          } as React.CSSProperties}
+        >{input[cursorPos] ?? ''}</span>
+        <span style={{ color: OS.chromeFg, whiteSpace: 'pre' }}>{input.slice(cursorPos + 1)}</span>
+        {/* inset-0 でプロンプト行全体を覆い、opacity-0 で透明にしてキーボード入力を受け取る */}
         <input
           ref={inputRef}
           autoFocus
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent outline-none caret-cyan-400 min-w-0"
-          style={{ color: OS.chromeFg }}
+          onKeyUp={handleKeyUp}
+          onSelect={e => syncCursor(e.currentTarget)}
+          className="absolute inset-0 opacity-0 cursor-default bg-transparent outline-none"
           spellCheck={false}
           autoComplete="off"
         />
