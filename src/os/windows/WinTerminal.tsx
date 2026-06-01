@@ -209,7 +209,7 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
       onClick={() => inputRef.current?.focus()}
     >
       {/* 出力エリア */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-0.5">
+      <div className="flex-1 overflow-y-auto p-3 space-y-0.5 no-scrollbar">
         {lines.map((line, i) => (
           <div
             key={i}
