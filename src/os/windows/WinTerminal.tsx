@@ -10,21 +10,6 @@ interface TermLine {
 
 const PROMPT = 'omu@OMU/OS:~$'
 
-const NEOFETCH_LOGO = [
-  '  ██████╗ ███╗   ███╗██╗   ██╗',
-  ' ██╔═══██╗████╗ ████║██║   ██║',
-  ' ██║   ██║██╔████╔██║██║   ██║',
-  ' ██║   ██║██║╚██╔╝██║██║   ██║',
-  ' ╚██████╔╝██║ ╚═╝ ██║╚██████╔╝',
-  '  ╚═════╝ ╚═╝     ╚═╝ ╚═════╝ ',
-  '          ██████╗ ███████╗     ',
-  '         ██╔═══██╗██╔════╝     ',
-  '         ██║   ██║███████╗     ',
-  '         ██║   ██║╚════██║     ',
-  '         ╚██████╔╝███████║     ',
-  '          ╚═════╝ ╚══════╝     ',
-]
-
 const LS_FILES = [
   'about.txt', 'skills.txt', 'projects.txt',
   'career.log', 'contact.app', 'zenn.dev/',
@@ -39,31 +24,6 @@ const OPEN_MAP: Record<string, string> = {
   'zenn': 'zenn', 'zenn.dev': 'zenn', 'zenn.dev/': 'zenn',
   'readme': 'readme', 'welcome': 'readme', 'welcome.txt': 'readme',
   'terminal': 'terminal', 'terminal.app': 'terminal',
-}
-
-function buildNeofetch(): string[] {
-  const langs = PROFILE.skills.map(s => s.name.split(' ')[0]).slice(0, 5).join(' / ')
-  const info = [
-    `${PROFILE.handle}@OMU/OS`,
-    '─'.repeat(20),
-    `OS      OMU/OS ${OS_VERSION}`,
-    `Host    omu-node.local`,
-    `User    ${PROFILE.handle}`,
-    `Title   ${PROFILE.title}`,
-    `Lang    ${langs}`,
-    `Loc     ${PROFILE.location}`,
-    `Uptime  ${PROFILE.exp}`,
-    '',
-    '● ● ● ● ● ● ●',
-  ]
-  const lines: string[] = []
-  const maxLen = Math.max(NEOFETCH_LOGO.length, info.length)
-  for (let i = 0; i < maxLen; i++) {
-    const logo = NEOFETCH_LOGO[i] ?? ' '.repeat(32)
-    const inf  = info[i] ?? ''
-    lines.push(`${logo}  ${inf}`)
-  }
-  return lines
 }
 
 function buildCat(file: string): string[] | null {
@@ -132,7 +92,6 @@ const HELP_LINES = [
   '  whoami               ユーザー情報',
   '  date                 現在日時',
   '  history              コマンド履歴',
-  '  neofetch             システム情報',
   '  clear                画面クリア',
 ]
 
@@ -213,10 +172,6 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
       case 'history':
         if (cmdHistory.current.length === 0) { pushLines(['(no history)']); break }
         pushLines(cmdHistory.current.slice(0, 20).map((c, i) => `  ${String(i + 1).padStart(3)}  ${c}`))
-        break
-
-      case 'neofetch':
-        pushLines(buildNeofetch())
         break
 
       case 'clear':

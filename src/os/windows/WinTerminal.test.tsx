@@ -27,7 +27,7 @@ describe('WinTerminal', () => {
     const input = screen.getByRole('textbox')
     await user.type(input, 'help{Enter}')
     expect(screen.getByText(/Available commands/)).toBeTruthy()
-    expect(screen.getByText(/neofetch/)).toBeTruthy()
+    expect(screen.getByText(/clear/)).toBeTruthy()
   })
 
   it('ls コマンドでファイル一覧を表示する', async () => {
@@ -62,14 +62,6 @@ describe('WinTerminal', () => {
     const input = screen.getByRole('textbox')
     await user.type(input, 'whoami{Enter}')
     expect(screen.getByText(/ooooomu/)).toBeTruthy()
-  })
-
-  it('neofetch コマンドで ASCII ロゴとシステム情報を表示する', async () => {
-    const user = userEvent.setup()
-    render(<WinTerminal />)
-    const input = screen.getByRole('textbox')
-    await user.type(input, 'neofetch{Enter}')
-    expect(screen.getByText(/OMU\/OS v1\.0/)).toBeTruthy()
   })
 
   it('存在しないコマンドで command not found を表示する', async () => {
