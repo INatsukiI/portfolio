@@ -16,6 +16,7 @@ import { WinContact } from './windows/WinContact'
 import { WinReadme } from './windows/WinReadme'
 import { WinTrash } from './windows/WinTrash'
 import { WinZenn } from './windows/WinZenn'
+import { WinTerminal } from './windows/WinTerminal'
 import { cn } from '@/lib/utils'
 
 const DESKTOP_STYLE = {
@@ -116,6 +117,7 @@ export default function OSScene() {
     if (w.id === 'contact')  return <WinContact />
     if (w.id === 'trash')    return <WinTrash />
     if (w.id === 'zenn')     return <WinZenn />
+    if (w.id === 'terminal') return <WinTerminal onOpen={openWindow} />
     return null
   }
 
@@ -162,7 +164,7 @@ export default function OSScene() {
           : 'top-12 left-3 flex flex-col gap-1'
         )}
       >
-        {DESKTOP_ICONS.map(ic => (
+        {DESKTOP_ICONS.filter(ic => !ic.launchOnly).map(ic => (
           <DesktopIcon
             key={ic.id}
             kind={ic.kind}

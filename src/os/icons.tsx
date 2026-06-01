@@ -1,4 +1,4 @@
-import { User, Code2, FolderOpen, Briefcase, Contact, FileText, Trash2, Cpu, BookOpen } from 'lucide-react'
+import { User, Code2, FolderOpen, Briefcase, Contact, FileText, Trash2, Cpu, BookOpen, Terminal } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { OS } from './theme'
 
@@ -12,6 +12,7 @@ const ICONS: Record<string, LucideIcon> = {
   trash:    Trash2,
   cpu:      Cpu,
   zenn:     BookOpen,
+  terminal: Terminal,
 }
 
 export type IconKey = keyof typeof ICONS
