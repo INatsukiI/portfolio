@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { PROFILE } from '../../profile'
 import { OS } from '../theme'
+import { OS_VERSION } from '../constants'
 
 interface TermLine {
   type: 'input' | 'output' | 'error'
@@ -45,7 +46,7 @@ function buildNeofetch(): string[] {
   const info = [
     `${PROFILE.handle}@OMU/OS`,
     '─'.repeat(20),
-    `OS      OMU/OS v1.0`,
+    `OS      OMU/OS ${OS_VERSION}`,
     `Host    omu-node.local`,
     `User    ${PROFILE.handle}`,
     `Title   ${PROFILE.title}`,
@@ -141,7 +142,7 @@ interface WinTerminalProps {
 
 export function WinTerminal({ onOpen }: WinTerminalProps) {
   const [lines, setLines] = useState<TermLine[]>([
-    { type: 'output', text: 'OMU/OS terminal v1.0 — type "help" for available commands.' },
+    { type: 'output', text: `OMU/OS terminal ${OS_VERSION} — type "help" for available commands.` },
     { type: 'output', text: '' },
   ])
   const [input, setInput]     = useState('')

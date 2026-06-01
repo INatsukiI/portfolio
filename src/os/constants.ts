@@ -1,5 +1,7 @@
 import type { IconKey } from './icons'
 
+export const OS_VERSION = 'v1.0'
+
 export const DESKTOP_ICONS: Array<{ id: string; label: string; kind: IconKey; launchOnly?: boolean }> = [
   { id: 'readme',   label: 'welcome.txt',  kind: 'readme' },
   { id: 'about',    label: 'profile.txt',  kind: 'about' },

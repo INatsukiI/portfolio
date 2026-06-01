@@ -4,7 +4,7 @@ import { DropdownMenu } from 'radix-ui'
 import { PROFILE } from '../profile'
 import { OSIcon } from './icons'
 import { useContainerSize, currentClock } from './hooks'
-import { DESKTOP_ICONS, WIN_DEFAULTS } from './constants'
+import { DESKTOP_ICONS, WIN_DEFAULTS, OS_VERSION } from './constants'
 import type { WindowState } from './constants'
 import { DesktopIcon } from './components/DesktopIcon'
 import { OSWindow } from './components/OSWindow'
@@ -373,7 +373,7 @@ export default function OSScene() {
               className="text-xs tracking-widest"
               style={{ color: 'rgba(200,216,232,0.3)', fontFamily: "'JetBrains Mono', monospace" }}
             >
-              v1.0 · INITIALIZING
+              {OS_VERSION} · INITIALIZING
             </motion.div>
             <div
               className="w-48 h-px overflow-hidden mt-2"
