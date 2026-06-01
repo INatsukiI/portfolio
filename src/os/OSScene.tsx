@@ -47,6 +47,7 @@ export default function OSScene() {
   const [booting, setBooting] = useState(true)
   const [clock, setClock] = useState(currentClock())
   const [menuOpen, setMenuOpen] = useState(false)
+  const [menuSearch, setMenuSearch] = useState('')
 
   useEffect(() => {
     const t = setTimeout(() => setBooting(false), 2000)
@@ -246,7 +247,7 @@ export default function OSScene() {
         }}
       >
         {/* Start / launcher */}
-        <DropdownMenu.Root onOpenChange={setMenuOpen}>
+        <DropdownMenu.Root onOpenChange={(open) => { setMenuOpen(open); if (!open) setMenuSearch('') }}>
           <DropdownMenu.Trigger asChild>
             <button
               className={cn(
@@ -291,27 +292,57 @@ export default function OSScene() {
                 </div>
               </div>
 
+              {/* Search */}
+              <div className="px-3 py-2 border-b" style={{ borderColor: 'rgba(0,212,255,0.08)' }}>
+                <input
+                  value={menuSearch}
+                  onChange={e => setMenuSearch(e.target.value)}
+                  onKeyDown={e => e.stopPropagation()}
+                  placeholder="search..."
+                  className="w-full bg-transparent outline-none text-xs"
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    color: 'rgba(200,216,232,0.8)',
+                  }}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </div>
+
               {/* Items */}
               <div className="py-1">
-                {DESKTOP_ICONS.map(ic => (
-                  <DropdownMenu.Item
-                    key={ic.id}
-                    onSelect={() => openWindow(ic.id)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-xs cursor-pointer outline-none transition-colors"
-                    style={{ fontFamily: "'JetBrains Mono', monospace", color: 'rgba(200,216,232,0.7)' }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = 'rgba(0,212,255,0.08)'
-                      e.currentTarget.style.color = '#00d4ff'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'transparent'
-                      e.currentTarget.style.color = 'rgba(200,216,232,0.7)'
-                    }}
-                  >
-                    <OSIcon kind={ic.kind} size={16} color="currentColor" />
-                    {ic.label}
-                  </DropdownMenu.Item>
-                ))}
+                {(() => {
+                  const q = menuSearch.trim().toLowerCase()
+                  const items = q
+                    ? DESKTOP_ICONS.filter(ic => ic.label.toLowerCase().includes(q) || ic.id.toLowerCase().includes(q))
+                    : DESKTOP_ICONS.filter(ic => ic.launchOnly)
+                  if (items.length === 0) {
+                    return (
+                      <div className="px-4 py-3 text-xs" style={{ color: 'rgba(200,216,232,0.3)', fontFamily: "'JetBrains Mono', monospace" }}>
+                        no results
+                      </div>
+                    )
+                  }
+                  return items.map(ic => (
+                    <DropdownMenu.Item
+                      key={ic.id}
+                      onSelect={() => openWindow(ic.id)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs cursor-pointer outline-none transition-colors"
+                      style={{ fontFamily: "'JetBrains Mono', monospace", color: 'rgba(200,216,232,0.7)' }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = 'rgba(0,212,255,0.08)'
+                        e.currentTarget.style.color = '#00d4ff'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = 'transparent'
+                        e.currentTarget.style.color = 'rgba(200,216,232,0.7)'
+                      }}
+                    >
+                      <OSIcon kind={ic.kind} size={16} color="currentColor" />
+                      {ic.label}
+                    </DropdownMenu.Item>
+                  ))
+                })()}
               </div>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
