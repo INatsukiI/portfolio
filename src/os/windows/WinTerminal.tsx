@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { PROFILE } from '../../profile'
 import { OS } from '../theme'
 import { OS_VERSION } from '../constants'
+import { LS_FILES, OPEN_MAP, completeInput } from './terminalComplete'
 
 interface TermLine {
   type: 'input' | 'output' | 'error'
@@ -13,22 +14,6 @@ const MAX_LINES = 500
 
 const trim = (lines: TermLine[]) =>
   lines.length > MAX_LINES ? lines.slice(lines.length - MAX_LINES) : lines
-
-const LS_FILES = [
-  'about.txt', 'skills.txt', 'projects.txt',
-  'career.log', 'contact.app', 'zenn.dev/',
-]
-
-const OPEN_MAP: Record<string, string> = {
-  'about': 'about', 'about.txt': 'about', 'profile': 'about', 'profile.txt': 'about',
-  'skills': 'skills', 'skills.txt': 'skills', 'skills.app': 'skills',
-  'projects': 'projects', 'projects.txt': 'projects', 'projects/': 'projects',
-  'career': 'career', 'career.log': 'career',
-  'contact': 'contact', 'contact.app': 'contact',
-  'zenn': 'zenn', 'zenn.dev': 'zenn', 'zenn.dev/': 'zenn',
-  'readme': 'readme', 'welcome': 'readme', 'welcome.txt': 'readme',
-  'terminal': 'terminal', 'terminal.app': 'terminal',
-}
 
 function buildCat(file: string): string[] | null {
   switch (file) {
@@ -114,6 +99,7 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
   const cmdHistory   = useRef<string[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef     = useRef<HTMLInputElement>(null)
+  const lastKeyRef   = useRef<string>('')
 
   useEffect(() => {
     const el = containerRef.current
@@ -200,10 +186,22 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const prevKey = lastKeyRef.current
+    lastKeyRef.current = e.key
+
     if (e.key === 'Enter') {
       runCommand(input)
       setInput('')
       setCursorPos(0)
+    } else if (e.key === 'Tab') {
+      e.preventDefault()
+      const res = completeInput(input, cursorPos, prevKey === 'Tab')
+      if (res.list) pushLines([res.list.join('    ')])
+      setInput(res.text)
+      setCursorPos(res.cursor)
+      requestAnimationFrame(() => {
+        inputRef.current?.setSelectionRange(res.cursor, res.cursor)
+      })
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       const next = Math.min(histIdx + 1, cmdHistory.current.length - 1)
