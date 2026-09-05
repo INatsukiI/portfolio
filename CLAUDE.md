@@ -89,6 +89,12 @@ src/
 ├── lib/utils.ts         # cn() ユーティリティ
 ├── profile.ts           # ポートフォリオコンテンツ（ここを編集して情報を更新）
 └── index.css            # Tailwind + shadcn テーマ変数
+
+.github/
+├── actions/setup/action.yml  # Node セットアップ + npm ci の composite action（ci.yml / deploy.yml から利用）
+└── workflows/
+    ├── ci.yml          # feature ブランチの Lint & Build & Test
+    └── deploy.yml      # main への push で GitHub Pages へデプロイ
 ```
 
 ---
