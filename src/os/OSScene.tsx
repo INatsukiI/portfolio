@@ -120,6 +120,30 @@ export default function OSScene() {
       return { ...w, x: cx, y: cy }
     }))
   }
+  const resizeWindow = (id: string, w: number, h: number) => {
+    const MIN_W = 280
+    const MIN_H = 180
+    const EDGE = 8
+    const bottomBar = compact ? 48 : 44
+    setWindows(ws => ws.map(win => {
+      if (win.id !== id) return win
+      // 画面内に収まることを最小サイズより優先する。幅/高さの絶対上限は画面サイズから決め、
+      // それでもwin.x/win.yのままだと右端・下端をはみ出す場合はx/yを詰めて画面内に収める。
+      const absMaxW = Math.max(MIN_W, cw - EDGE * 2)
+      const absMaxH = Math.max(MIN_H, ch - bottomBar)
+      const newW = Math.min(Math.max(w, MIN_W), absMaxW)
+      const newH = Math.min(Math.max(h, MIN_H), absMaxH)
+      const newX = Math.min(win.x, Math.max(EDGE, cw - newW - EDGE))
+      const newY = Math.min(win.y, Math.max(0, ch - newH - bottomBar))
+      return {
+        ...win,
+        x: newX,
+        y: newY,
+        w: newW,
+        h: newH,
+      }
+    }))
+  }
   const minimizeWindow = (id: string) =>
     setWindows(ws => ws.map(w => w.id === id ? { ...w, minimized: true } : w))
   const maximizeWindow = (id: string) =>
@@ -244,6 +268,7 @@ export default function OSScene() {
             onClose={() => closeWindow(w.id)}
             onFocus={() => focusWindow(w.id)}
             onMove={(x, y) => moveWindow(w.id, x, y)}
+            onResize={(rw, rh) => resizeWindow(w.id, rw, rh)}
             onMinimize={() => minimizeWindow(w.id)}
             onMaximize={() => maximizeWindow(w.id)}
           >
