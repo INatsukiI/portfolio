@@ -80,6 +80,7 @@ src/
 │   │       ├── SectionHead.tsx # shadcn Separator を使ったセクション見出し
 │   │       └── DataRow.tsx
 │   ├── windows/         # 各ウィンドウのコンテンツ
+│   │   └── terminalComplete.ts  # 擬似ターミナルの Tab 入力補完ロジック（純粋関数）
 │   ├── icons.tsx        # lucide-react アイコンのマッピング（OSIcon）
 │   ├── theme.ts         # OS カラーパレット（OS オブジェクト）
 │   ├── constants.ts     # ウィンドウ初期設定など

@@ -99,4 +99,90 @@ describe('WinTerminal', () => {
     await user.keyboard('{ArrowUp}')
     expect(input.value).toBe('whoami')
   })
+
+  describe('Tab 入力補完', () => {
+    it('cat abou + Tab で cat about.txt に補完する', async () => {
+      const user = userEvent.setup()
+      render(<WinTerminal />)
+      const input = screen.getByRole('textbox') as HTMLInputElement
+      await user.type(input, 'cat abou')
+      await user.keyboard('{Tab}')
+      expect(input.value).toBe('cat about.txt ')
+    })
+
+    it('he + Tab で help に補完する', async () => {
+      const user = userEvent.setup()
+      render(<WinTerminal />)
+      const input = screen.getByRole('textbox') as HTMLInputElement
+      await user.type(input, 'he')
+      await user.keyboard('{Tab}')
+      expect(input.value).toBe('help ')
+    })
+
+    it('c + Tab は共通接頭辞が伸びず変化しない', async () => {
+      const user = userEvent.setup()
+      render(<WinTerminal />)
+      const input = screen.getByRole('textbox') as HTMLInputElement
+      await user.type(input, 'c')
+      await user.keyboard('{Tab}')
+      expect(input.value).toBe('c')
+    })
+
+    it('ca + Tab で cat に補完しスペースを付ける', async () => {
+      const user = userEvent.setup()
+      render(<WinTerminal />)
+      const input = screen.getByRole('textbox') as HTMLInputElement
+      await user.type(input, 'ca')
+      await user.keyboard('{Tab}')
+      expect(input.value).toBe('cat ')
+    })
+
+    it('cat + スペース + Tab 2回で候補一覧を表示する', async () => {
+      const user = userEvent.setup()
+      render(<WinTerminal />)
+      const input = screen.getByRole('textbox') as HTMLInputElement
+      await user.type(input, 'cat ')
+      await user.keyboard('{Tab}{Tab}')
+      expect(screen.getByText(/about\.txt\s+skills\.txt/)).toBeTruthy()
+      expect(input.value).toBe('cat ')
+    })
+
+    it('cat zenn + Tab は末尾スペースなしで補完する', async () => {
+      const user = userEvent.setup()
+      render(<WinTerminal />)
+      const input = screen.getByRole('textbox') as HTMLInputElement
+      await user.type(input, 'cat zenn')
+      await user.keyboard('{Tab}')
+      expect(input.value).toBe('cat zenn.dev/')
+    })
+
+    it('open ab + Tab で open about に補完する', async () => {
+      const user = userEvent.setup()
+      render(<WinTerminal />)
+      const input = screen.getByRole('textbox') as HTMLInputElement
+      await user.type(input, 'open ab')
+      await user.keyboard('{Tab}')
+      expect(input.value).toBe('open about ')
+    })
+
+    it('未知コマンドの引数は補完しない', async () => {
+      const user = userEvent.setup()
+      render(<WinTerminal />)
+      const input = screen.getByRole('textbox') as HTMLInputElement
+      await user.type(input, 'xyz abc')
+      await user.keyboard('{Tab}')
+      expect(input.value).toBe('xyz abc')
+    })
+
+    it('補完後に他キー入力で Tab 連打状態が解除される', async () => {
+      const user = userEvent.setup()
+      render(<WinTerminal />)
+      const input = screen.getByRole('textbox') as HTMLInputElement
+      await user.type(input, 'cat ')
+      await user.keyboard('{Tab}')
+      await user.type(input, 'q{Backspace}')
+      await user.keyboard('{Tab}')
+      expect(screen.queryByText(/about\.txt\s+skills\.txt/)).toBeNull()
+    })
+  })
 })
