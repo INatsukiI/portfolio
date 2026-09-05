@@ -59,6 +59,22 @@ export default function OSScene() {
     return () => clearInterval(i)
   }, [])
 
+  // Esc キーでアクティブ（最前面）なウィンドウを閉じる。
+  // ランチャーメニュー表示中は Radix 側の Esc 処理（メニューを閉じる）を優先する。
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || menuOpen) return
+      setWindows((ws) => {
+        const visible = ws.filter(w => !w.minimized)
+        if (visible.length === 0) return ws
+        const top = visible.reduce((a, b) => (a.z > b.z ? a : b))
+        return ws.filter(w => w.id !== top.id)
+      })
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [menuOpen])
+
   const openWindow = (id: string) => {
     const newZ = zTop + 1
     setZTop(newZ)
@@ -172,8 +188,7 @@ export default function OSScene() {
             label={ic.label}
             selected={selectedIcon === ic.id}
             compact={compact}
-            onOpen={(e) => {
-              e.stopPropagation()
+            onOpen={() => {
               setSelectedIcon(ic.id)
               openWindow(ic.id)
             }}
