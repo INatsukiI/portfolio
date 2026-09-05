@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      GitHub Pages はレスポンスヘッダーをカスタマイズできない静的ホスティングのため、
+      meta タグで CSP を設定する（frame-ancestors / report-uri など一部ディレクティブは
+      meta では無効なため含めていない）。
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://zenn.dev; script-src 'self'; object-src 'none'; base-uri 'self';" />
     <title>OMU OS | omu's Portfolio</title>
     <meta name="description" content="「ものをつくり、人にとどける。」― Webサービスの設計から実装・運用まで一貫してこなすバックエンドエンジニア omu のポートフォリオ。" />
 

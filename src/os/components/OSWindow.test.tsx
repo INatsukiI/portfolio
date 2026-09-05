@@ -131,4 +131,11 @@ describe('OSWindow', () => {
     fireEvent.keyDown(handle, { key: 'ArrowDown' })
     expect(onResize).toHaveBeenCalledWith(400, 320)
   })
+
+  it('window control ボタンに aria-label が設定される', () => {
+    render(<OSWindow {...baseProps}><div>content</div></OSWindow>)
+    expect(screen.getByRole('button', { name: '閉じる' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '最小化' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '最大化' })).toBeTruthy()
+  })
 })
