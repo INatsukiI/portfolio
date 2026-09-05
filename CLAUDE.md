@@ -25,7 +25,7 @@
 | アイコン | lucide-react |
 | フォント | JetBrains Mono / Space Grotesk（Google Fonts） |
 | テスト | Vitest + @testing-library/react |
-| デプロイ | 静的ホスティング（GitHub Pages / Netlify / Vercel） |
+| デプロイ | GitHub Pages（`main` push で `deploy.yml` が自動デプロイ） |
 
 ---
 
@@ -46,7 +46,7 @@ npm run test:watch   # テストウォッチモード（開発中）
 - コードを変更したら必ず `npm run check`,`npm run test`を実行し、エラーゼロを確認してから作業完了とすること。
 - コードをコミットする際はブランチを確認して、mainにいる場合はfeature/xxxのブランチを切ってコミットすること。
 - `package.json` を変更したら `npm install` を実行して `package-lock.json` を同期すること。
-- UI に関わる変更は、ブラウザプレビュー（`preview_start` → `preview_screenshot`）で目視確認してから完了とすること。
+- UI に関わる変更は、`npm run dev` を起動し、ブラウザ（または headless browser）で実際の画面を目視確認してから完了とすること。
 - スタック・ディレクトリ構成・コーディング規約が変わったら、このファイル（CLAUDE.md）を都度更新すること。
 - 新しい npm パッケージを追加する前に、既存の依存関係で代替できないか確認すること。
 - 繰り返し使う作業フロー（PR 作成・コンポーネント追加パターンなど）は `.claude/skills/` に skill として追加することを検討する。
@@ -69,7 +69,7 @@ npm run test:watch   # テストウォッチモード（開発中）
    - 本ファイルのコーディング規約・命名規則・テストに関するルールへの準拠
    - アクセシビリティ（該当する場合）
    - CI が実際に通っているか（ブランチ名が `ci.yml` のトリガー条件に合わずチェックが一度も走っていない、なども不備として扱う）
-3. 問題がなければ `gh pr merge <N> --merge` でそのまま main へマージする（人の承認は待たない）。
+3. 問題がなければ `gh pr merge <N> --merge` でそのまま main へマージする（人の承認は待たない）。ただし branch protection の必須チェック「Lint & Build & Test」は `feature/**` / `fix/**` ブランチでしか走らないため、それ以外（`dependabot/**` 等）の PR は永久に `BLOCKED` のままになる。その場合はローカルでブランチをチェックアウトし `npm ci && npm run check && npm run test` で代替確認したうえで `gh pr merge <N> --merge --admin` を使う。
 4. 問題があれば、そのブランチをチェックアウト済みの子ワークツリー／セッションが存在すればそこへ修正を依頼し、存在しない・応答がない場合は新しい worktree を自分で作成して直接修正する。修正後は `npm run check` と `npm run test` を通してから push し、2 に戻って再レビューする。
 5. 「修正 → 再レビュー」のループは **最大 3 回まで**。3 回試しても解決しない場合は自動マージを諦め、PR にコメントで指摘内容と試行結果を残し、ユーザーに報告して判断を仰ぐ。
 6. 作業用に作った一時 worktree は完了後に必ず `git worktree remove` で片付ける。他セッションが使用中の worktree には手を出さない。
@@ -80,13 +80,7 @@ npm run test:watch   # テストウォッチモード（開発中）
 
 ```
 src/
-├── components/ui/       # shadcn/ui コンポーネント（npx shadcn@latest add で追加）
-│   ├── button.tsx
-│   ├── badge.tsx
-│   ├── progress.tsx
-│   ├── separator.tsx
-│   ├── table.tsx
-│   └── textarea.tsx
+├── components/ui/       # shadcn/ui コンポーネント（npx shadcn@latest add で追加、内容は ls で都度確認）
 ├── os/
 │   ├── components/
 │   │   ├── DesktopIcon.tsx
@@ -128,7 +122,7 @@ src/
 
 ### スタイリングルール
 
-- **shadcn/ui コンポーネントを優先して使う**。`Button`, `Badge`, `Progress`, `Separator`, `Table`, `Textarea` はすでに導入済み
+- **shadcn/ui コンポーネントを優先して使う**。導入済みコンポーネントは `src/components/ui/` を参照
 - 新しい UI パーツが必要なら `npx shadcn@latest add <component>` で追加する
 - テーマカラーは `src/index.css` の `:root` CSS 変数で管理（`--primary` = シアン `#00d4ff` など）
 - OS 固有の色は `src/os/theme.ts` の `OS` オブジェクトを参照する。直接 HEX を書かない（グラデーション文字列内は除く）
@@ -142,4 +136,4 @@ src/
 
 ### TypeScript
 
-- `any` は使わない
+- `any` は使わない。型が不明な場合は `unknown` + 型ガード、または適切な型 / interface を定義する
