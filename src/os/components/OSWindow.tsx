@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import type { IconKey } from '../icons'
 
+type ResizeDir = 'e' | 's' | 'se'
+
 interface OSWindowProps {
   id: string
   title: string
@@ -10,7 +12,7 @@ interface OSWindowProps {
   x: number
   y: number
   w: number
-  h?: number
+  h: number
   z: number
   compact: boolean
   minimized?: boolean
@@ -18,6 +20,7 @@ interface OSWindowProps {
   onClose: () => void
   onFocus: () => void
   onMove: (x: number, y: number) => void
+  onResize: (w: number, h: number) => void
   onMinimize: () => void
   onMaximize: () => void
   children: ReactNode
@@ -25,7 +28,7 @@ interface OSWindowProps {
   plain?: boolean
 }
 
-export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, onFocus, onMove, onMinimize, onMaximize, children, plain }: OSWindowProps) {
+export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, onFocus, onMove, onResize, onMinimize, onMaximize, children, plain }: OSWindowProps) {
   const startDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (compact || maximized) return
     e.preventDefault()
@@ -34,6 +37,27 @@ export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, on
     const ox = x, oy = y
     try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* ignore */ }
     const onMv = (ev: PointerEvent) => onMove(ox + (ev.clientX - sx), oy + (ev.clientY - sy))
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMv)
+      window.removeEventListener('pointerup', onUp)
+    }
+    window.addEventListener('pointermove', onMv)
+    window.addEventListener('pointerup', onUp)
+  }
+
+  const startResize = (e: ReactPointerEvent<HTMLDivElement>, dir: ResizeDir) => {
+    if (compact || maximized) return
+    e.preventDefault()
+    e.stopPropagation()
+    onFocus()
+    const sx = e.clientX, sy = e.clientY
+    const ow = w, oh = h
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* ignore */ }
+    const onMv = (ev: PointerEvent) => {
+      const nw = dir === 's' ? ow : ow + (ev.clientX - sx)
+      const nh = dir === 'e' ? oh : oh + (ev.clientY - sy)
+      onResize(nw, nh)
+    }
     const onUp = () => {
       window.removeEventListener('pointermove', onMv)
       window.removeEventListener('pointerup', onUp)
@@ -51,7 +75,7 @@ export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, on
     width: 'auto',
   } : {
     position: 'absolute',
-    left: x, top: y, width: w, ...(plain && h && { height: h }),
+    left: x, top: y, width: w, height: h,
   }
 
   return (
@@ -66,7 +90,7 @@ export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, on
     >
       {/* Glass panel */}
       <div
-        className="flex flex-col flex-1 min-h-0 rounded-lg overflow-hidden"
+        className="relative flex flex-col flex-1 min-h-0 rounded-lg overflow-hidden"
         style={{
           background: 'rgba(6, 14, 30, 0.82)',
           backdropFilter: 'blur(24px)',
@@ -135,6 +159,36 @@ export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, on
         >
           {children}
         </div>
+
+        {/* Resize handles */}
+        {!compact && !maximized ? (
+          <>
+            <div
+              onPointerDown={(e) => startResize(e, 'e')}
+              data-testid="resize-handle-e"
+              className="absolute top-0 right-0 bottom-0 w-1.5"
+              style={{ cursor: 'ew-resize', touchAction: 'none' }}
+            />
+            <div
+              onPointerDown={(e) => startResize(e, 's')}
+              data-testid="resize-handle-s"
+              className="absolute left-0 right-0 bottom-0 h-1.5"
+              style={{ cursor: 'ns-resize', touchAction: 'none' }}
+            />
+            <div
+              onPointerDown={(e) => startResize(e, 'se')}
+              data-testid="resize-handle-se"
+              className="absolute right-0 bottom-0 w-3.5 h-3.5"
+              style={{ cursor: 'nwse-resize', touchAction: 'none' }}
+              title="サイズ変更"
+              aria-label="サイズ変更"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" className="absolute right-0.5 bottom-0.5 pointer-events-none">
+                <path d="M12 3 L3 12 M12 7.5 L7.5 12 M12 11 L11 12" stroke="rgba(0,212,255,0.4)" strokeWidth="1" />
+              </svg>
+            </div>
+          </>
+        ) : null}
       </div>
     </motion.div>
   )

@@ -104,6 +104,22 @@ export default function OSScene() {
       return { ...w, x: cx, y: cy }
     }))
   }
+  const resizeWindow = (id: string, w: number, h: number) => {
+    const MIN_W = 280
+    const MIN_H = 180
+    const EDGE = 8
+    const bottomBar = compact ? 48 : 44
+    setWindows(ws => ws.map(win => {
+      if (win.id !== id) return win
+      const maxW = Math.max(MIN_W, cw - win.x - EDGE)
+      const maxH = Math.max(MIN_H, ch - win.y - bottomBar)
+      return {
+        ...win,
+        w: Math.min(Math.max(w, MIN_W), maxW),
+        h: Math.min(Math.max(h, MIN_H), maxH),
+      }
+    }))
+  }
   const minimizeWindow = (id: string) =>
     setWindows(ws => ws.map(w => w.id === id ? { ...w, minimized: true } : w))
   const maximizeWindow = (id: string) =>
@@ -229,6 +245,7 @@ export default function OSScene() {
             onClose={() => closeWindow(w.id)}
             onFocus={() => focusWindow(w.id)}
             onMove={(x, y) => moveWindow(w.id, x, y)}
+            onResize={(rw, rh) => resizeWindow(w.id, rw, rh)}
             onMinimize={() => minimizeWindow(w.id)}
             onMaximize={() => maximizeWindow(w.id)}
           >

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { OSWindow } from './OSWindow'
 
@@ -29,6 +29,7 @@ describe('OSWindow', () => {
     onClose: vi.fn(),
     onFocus: vi.fn(),
     onMove: vi.fn(),
+    onResize: vi.fn(),
     onMinimize: vi.fn(),
     onMaximize: vi.fn(),
   } as const
@@ -69,5 +70,42 @@ describe('OSWindow', () => {
     render(<OSWindow {...baseProps} onMaximize={onMaximize}><div>content</div></OSWindow>)
     await user.click(screen.getByTitle('最大化'))
     expect(onMaximize).toHaveBeenCalledOnce()
+  })
+
+  it('右下ハンドルのドラッグで幅・高さの両方を変更して onResize が呼ばれる', () => {
+    const onResize = vi.fn()
+    render(<OSWindow {...baseProps} onResize={onResize}><div>content</div></OSWindow>)
+    const handle = screen.getByTestId('resize-handle-se')
+    fireEvent.pointerDown(handle, { clientX: 0, clientY: 0 })
+    fireEvent.pointerMove(window, { clientX: 50, clientY: 30 })
+    expect(onResize).toHaveBeenCalledWith(450, 330)
+  })
+
+  it('右辺ハンドルのドラッグでは幅のみ変更される', () => {
+    const onResize = vi.fn()
+    render(<OSWindow {...baseProps} onResize={onResize}><div>content</div></OSWindow>)
+    const handle = screen.getByTestId('resize-handle-e')
+    fireEvent.pointerDown(handle, { clientX: 0, clientY: 0 })
+    fireEvent.pointerMove(window, { clientX: 50, clientY: 30 })
+    expect(onResize).toHaveBeenCalledWith(450, 300)
+  })
+
+  it('下辺ハンドルのドラッグでは高さのみ変更される', () => {
+    const onResize = vi.fn()
+    render(<OSWindow {...baseProps} onResize={onResize}><div>content</div></OSWindow>)
+    const handle = screen.getByTestId('resize-handle-s')
+    fireEvent.pointerDown(handle, { clientX: 0, clientY: 0 })
+    fireEvent.pointerMove(window, { clientX: 50, clientY: 30 })
+    expect(onResize).toHaveBeenCalledWith(400, 330)
+  })
+
+  it('compact のときリサイズハンドルが表示されない', () => {
+    render(<OSWindow {...baseProps} compact={true}><div>content</div></OSWindow>)
+    expect(screen.queryByTestId('resize-handle-se')).toBeNull()
+  })
+
+  it('maximized のときリサイズハンドルが表示されない', () => {
+    render(<OSWindow {...baseProps} maximized={true}><div>content</div></OSWindow>)
+    expect(screen.queryByTestId('resize-handle-se')).toBeNull()
   })
 })
