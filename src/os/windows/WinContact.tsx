@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { GitFork, AtSign, ExternalLink, Send, Mail } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PROFILE } from '../../profile'
@@ -25,6 +25,18 @@ export function WinContact() {
   const [emailError, setEmailError] = useState(false)
   const [subject,    setSubject]    = useState('')
   const [body,       setBody]       = useState('')
+  const [feedback, setFeedback] = useState<{ text: string; kind: 'success' | 'error' } | null>(null)
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => {
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
+  }, [])
+
+  const showFeedback = (text: string, kind: 'success' | 'error') => {
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
+    setFeedback({ text, kind })
+    feedbackTimer.current = setTimeout(() => setFeedback(null), 4000)
+  }
 
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -59,15 +71,19 @@ export function WinContact() {
     if (!canSend) return
     const { subj, fullBody } = buildParams()
     window.open(`mailto:${email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(fullBody)}`)
+    // mailto はブラウザによって window.open の戻り値が不定なため、成功扱いにする
+    showFeedback('メールアプリを開きました', 'success')
   }
 
   const handleGmail = () => {
     if (!canSend) return
     const { subj, fullBody } = buildParams()
-    window.open(
+    const win = window.open(
       `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subj)}&body=${encodeURIComponent(fullBody)}`,
       '_blank',
     )
+    if (win) showFeedback('Gmail を開きました', 'success')
+    else showFeedback('ポップアップがブロックされました。ブラウザの設定をご確認ください', 'error')
   }
 
   return (
@@ -191,9 +207,14 @@ export function WinContact() {
             className="flex justify-end items-center gap-2 px-4 py-3 border-t border-border/50"
             style={{ background: OS.bodyShade }}
           >
-            {hintMessage && (
-              <span className="font-mono text-[10px] mr-auto" style={{ color: OS.inkSoft }}>
-                › {hintMessage}
+            {(feedback || hintMessage) && (
+              <span
+                role="status"
+                aria-live="polite"
+                className="font-mono text-[10px] mr-auto"
+                style={{ color: feedback ? (feedback.kind === 'success' ? OS.green : OS.red) : OS.inkSoft }}
+              >
+                {feedback ? `${feedback.kind === 'success' ? '✓' : '✕'} ${feedback.text}` : `› ${hintMessage}`}
               </span>
             )}
             <Button
