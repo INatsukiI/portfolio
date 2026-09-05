@@ -5,10 +5,6 @@ on:
     branches:
       - 'feature/**'
       - 'fix/**'
-    paths-ignore:
-      - 'CLAUDE.md'
-      - '.claude/**'
-      - '**.md'
 
 permissions: {}
 
