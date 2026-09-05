@@ -50,12 +50,10 @@ export function WinZenn() {
     let cancelled = false
     // setState は必ず非同期コールバック内で呼ぶ（react-hooks/set-state-in-effect 対応）
     const API = `https://zenn.dev/api/articles?username=${ZENN_USER}&order=latest&count=20`
-    // CORS が通る場合は直接、ブロックされたら corsproxy.io 経由で再試行
-    const tryFetch = (url: string) =>
-      fetch(url).then(r => { if (!r.ok) throw new Error(`${r.status}`); return r.json() })
-
-    tryFetch(API)
-      .catch(() => tryFetch(`https://corsproxy.io/?${encodeURIComponent(API)}`))
+    // 素性の分からない第三者 CORS プロキシは信頼しない。直接 fetch のみ試行し、
+    // ブロックされた場合はエラー UI（Zenn への外部リンク）にフォールバックする。
+    fetch(API)
+      .then(r => { if (!r.ok) throw new Error(`${r.status}`); return r.json() })
       .then((data: { articles: ZennArticle[] }) => {
         if (!cancelled) {
           setArticles(data.articles ?? [])
