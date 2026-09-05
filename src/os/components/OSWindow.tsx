@@ -92,23 +92,26 @@ export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, on
           <button
             onClick={(e) => { e.stopPropagation(); onClose() }}
             onPointerDown={(e) => e.stopPropagation()}
-            className="w-3 h-3 rounded-full flex-shrink-0 transition-opacity hover:opacity-80"
+            className="w-3 h-3 rounded-full flex-shrink-0 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
             style={{ background: '#ff4d6a', boxShadow: '0 0 6px rgba(255,77,106,0.5)' }}
             title="閉じる"
+            aria-label="閉じる"
           />
           <button
             onClick={(e) => { e.stopPropagation(); onMinimize() }}
             onPointerDown={(e) => e.stopPropagation()}
-            className="w-3 h-3 rounded-full flex-shrink-0 transition-opacity hover:opacity-80"
+            className="w-3 h-3 rounded-full flex-shrink-0 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
             style={{ background: '#ffbd2e', boxShadow: '0 0 6px rgba(255,189,46,0.5)' }}
             title="最小化"
+            aria-label="最小化"
           />
           <button
             onClick={(e) => { e.stopPropagation(); onMaximize() }}
             onPointerDown={(e) => e.stopPropagation()}
-            className="w-3 h-3 rounded-full flex-shrink-0 transition-opacity hover:opacity-80"
+            className="w-3 h-3 rounded-full flex-shrink-0 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
             style={{ background: '#28c840', boxShadow: '0 0 6px rgba(40,200,64,0.5)' }}
             title="最大化"
+            aria-label="最大化"
           />
 
           {/* Title — absolutely centered so traffic-light buttons don't offset it */}
