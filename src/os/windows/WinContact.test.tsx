@@ -1,7 +1,14 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { WinContact } from './WinContact'
+
+const fillValidForm = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.type(screen.getByPlaceholderText('お名前'), 'Taro')
+  await user.type(screen.getByPlaceholderText('メールアドレス'), 'taro@example.com')
+  await user.tab()
+  await user.type(screen.getByPlaceholderText('メッセージを入力してください...'), 'Hello!')
+}
 
 describe('WinContact', () => {
   it('links セクションにリンクが表示される', () => {
@@ -69,11 +76,47 @@ describe('WinContact', () => {
   it('全必須項目が揃うとボタンが有効になる', async () => {
     const user = userEvent.setup()
     render(<WinContact />)
-    await user.type(screen.getByPlaceholderText('お名前'), 'Taro')
-    await user.type(screen.getByPlaceholderText('メールアドレス'), 'taro@example.com')
-    await user.tab()
-    await user.type(screen.getByPlaceholderText('メッセージを入力してください...'), 'Hello!')
+    await fillValidForm(user)
     expect(screen.getByRole('button', { name: /MAIL APP/i }).hasAttribute('disabled')).toBe(false)
     expect(screen.getByRole('button', { name: /GMAIL/i }).hasAttribute('disabled')).toBe(false)
+  })
+
+  describe('送信後のフィードバック', () => {
+    let openSpy: ReturnType<typeof vi.spyOn>
+
+    beforeEach(() => {
+      openSpy = vi.spyOn(window, 'open')
+    })
+
+    afterEach(() => {
+      openSpy.mockRestore()
+    })
+
+    it('MAIL APP 押下後に「メールアプリを開きました」と表示される', async () => {
+      openSpy.mockReturnValue(null)
+      const user = userEvent.setup()
+      render(<WinContact />)
+      await fillValidForm(user)
+      await user.click(screen.getByRole('button', { name: /MAIL APP/i }))
+      expect(screen.getByRole('status').textContent).toContain('メールアプリを開きました')
+    })
+
+    it('GMAIL 押下でポップアップが開けた場合「Gmail を開きました」と表示される', async () => {
+      openSpy.mockReturnValue(window)
+      const user = userEvent.setup()
+      render(<WinContact />)
+      await fillValidForm(user)
+      await user.click(screen.getByRole('button', { name: /GMAIL/i }))
+      expect(screen.getByRole('status').textContent).toContain('Gmail を開きました')
+    })
+
+    it('GMAIL 押下でポップアップがブロックされた場合エラーメッセージが表示される', async () => {
+      openSpy.mockReturnValue(null)
+      const user = userEvent.setup()
+      render(<WinContact />)
+      await fillValidForm(user)
+      await user.click(screen.getByRole('button', { name: /GMAIL/i }))
+      expect(screen.getByRole('status').textContent).toContain('ポップアップがブロックされました')
+    })
   })
 })
