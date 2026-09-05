@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode, PointerEvent as ReactPointerEvent } from 'react'
+import type { CSSProperties, ReactNode, PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import type { IconKey } from '../icons'
@@ -64,6 +64,23 @@ export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, on
     }
     window.addEventListener('pointermove', onMv)
     window.addEventListener('pointerup', onUp)
+  }
+
+  const RESIZE_STEP = 20
+  const handleResizeKeyDown = (dir: ResizeDir) => (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    let dw = 0, dh = 0
+    if (dir !== 's') {
+      if (e.key === 'ArrowRight') dw = RESIZE_STEP
+      else if (e.key === 'ArrowLeft') dw = -RESIZE_STEP
+    }
+    if (dir !== 'e') {
+      if (e.key === 'ArrowDown') dh = RESIZE_STEP
+      else if (e.key === 'ArrowUp') dh = -RESIZE_STEP
+    }
+    if (dw === 0 && dh === 0) return
+    e.preventDefault()
+    onFocus()
+    onResize(w + dw, h + dh)
   }
 
   const positionStyle: CSSProperties = (compact || maximized) ? {
@@ -165,23 +182,42 @@ export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, on
           <>
             <div
               onPointerDown={(e) => startResize(e, 'e')}
+              onKeyDown={handleResizeKeyDown('e')}
               data-testid="resize-handle-e"
               className="absolute top-0 right-0 bottom-0 w-1.5"
               style={{ cursor: 'ew-resize', touchAction: 'none' }}
+              role="slider"
+              tabIndex={0}
+              title="幅を変更"
+              aria-label="幅を変更"
+              aria-valuenow={w}
+              aria-orientation="horizontal"
             />
             <div
               onPointerDown={(e) => startResize(e, 's')}
+              onKeyDown={handleResizeKeyDown('s')}
               data-testid="resize-handle-s"
               className="absolute left-0 right-0 bottom-0 h-1.5"
               style={{ cursor: 'ns-resize', touchAction: 'none' }}
+              role="slider"
+              tabIndex={0}
+              title="高さを変更"
+              aria-label="高さを変更"
+              aria-valuenow={h}
+              aria-orientation="vertical"
             />
             <div
               onPointerDown={(e) => startResize(e, 'se')}
+              onKeyDown={handleResizeKeyDown('se')}
               data-testid="resize-handle-se"
               className="absolute right-0 bottom-0 w-3.5 h-3.5"
               style={{ cursor: 'nwse-resize', touchAction: 'none' }}
-              title="サイズ変更"
-              aria-label="サイズ変更"
+              role="slider"
+              tabIndex={0}
+              title="サイズを変更"
+              aria-label="サイズを変更"
+              aria-valuenow={w}
+              aria-orientation="horizontal"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" className="absolute right-0.5 bottom-0.5 pointer-events-none">
                 <path d="M12 3 L3 12 M12 7.5 L7.5 12 M12 11 L11 12" stroke="rgba(0,212,255,0.4)" strokeWidth="1" />

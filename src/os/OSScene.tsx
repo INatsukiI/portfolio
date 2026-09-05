@@ -111,12 +111,20 @@ export default function OSScene() {
     const bottomBar = compact ? 48 : 44
     setWindows(ws => ws.map(win => {
       if (win.id !== id) return win
-      const maxW = Math.max(MIN_W, cw - win.x - EDGE)
-      const maxH = Math.max(MIN_H, ch - win.y - bottomBar)
+      // 画面内に収まることを最小サイズより優先する。幅/高さの絶対上限は画面サイズから決め、
+      // それでもwin.x/win.yのままだと右端・下端をはみ出す場合はx/yを詰めて画面内に収める。
+      const absMaxW = Math.max(MIN_W, cw - EDGE * 2)
+      const absMaxH = Math.max(MIN_H, ch - bottomBar)
+      const newW = Math.min(Math.max(w, MIN_W), absMaxW)
+      const newH = Math.min(Math.max(h, MIN_H), absMaxH)
+      const newX = Math.min(win.x, Math.max(EDGE, cw - newW - EDGE))
+      const newY = Math.min(win.y, Math.max(0, ch - newH - bottomBar))
       return {
         ...win,
-        w: Math.min(Math.max(w, MIN_W), maxW),
-        h: Math.min(Math.max(h, MIN_H), maxH),
+        x: newX,
+        y: newY,
+        w: newW,
+        h: newH,
       }
     }))
   }

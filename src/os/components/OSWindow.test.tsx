@@ -108,4 +108,27 @@ describe('OSWindow', () => {
     render(<OSWindow {...baseProps} maximized={true}><div>content</div></OSWindow>)
     expect(screen.queryByTestId('resize-handle-se')).toBeNull()
   })
+
+  it('3つのリサイズハンドルすべてに aria-label が付与されている', () => {
+    render(<OSWindow {...baseProps}><div>content</div></OSWindow>)
+    expect(screen.getByTestId('resize-handle-e').getAttribute('aria-label')).toBe('幅を変更')
+    expect(screen.getByTestId('resize-handle-s').getAttribute('aria-label')).toBe('高さを変更')
+    expect(screen.getByTestId('resize-handle-se').getAttribute('aria-label')).toBe('サイズを変更')
+  })
+
+  it('右辺ハンドルで矢印キー操作すると幅のみ変更される', () => {
+    const onResize = vi.fn()
+    render(<OSWindow {...baseProps} onResize={onResize}><div>content</div></OSWindow>)
+    const handle = screen.getByTestId('resize-handle-e')
+    fireEvent.keyDown(handle, { key: 'ArrowRight' })
+    expect(onResize).toHaveBeenCalledWith(420, 300)
+  })
+
+  it('下辺ハンドルで矢印キー操作すると高さのみ変更される', () => {
+    const onResize = vi.fn()
+    render(<OSWindow {...baseProps} onResize={onResize}><div>content</div></OSWindow>)
+    const handle = screen.getByTestId('resize-handle-s')
+    fireEvent.keyDown(handle, { key: 'ArrowDown' })
+    expect(onResize).toHaveBeenCalledWith(400, 320)
+  })
 })
