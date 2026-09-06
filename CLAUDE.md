@@ -60,6 +60,9 @@ npx playwright install chromium
   1. `npm run dev` を起動する
   2. `npm run screenshot -- <出力パス> [URL] [幅x高さ]` でスクリーンショットを撮り、画像を確認する（`.claude/skills/ui-preview` skill も参照）
   3. 主要フローに関わる変更なら `npm run test:e2e` も通す
+- **PR 作成時は、対応する既存 issue がないか `gh issue list` で必ず確認し、あれば PR 本文に `Closes #<番号>` を書いてマージ時に自動クローズされるようにすること。**
+  - 複数 issue を閉じる場合はキーワードを issue ごとに繰り返す（`Closes #46, Closes #47`）。`Closes #46, #47` はカンマ区切りが効かず #46 しか閉じない。
+  - 部分対応にとどまる issue は `Closes` ではなく `Refs #<番号>` にする。Tracking issue は閉じない。
 - **見た目に変更が入る PR（レイアウト・色・アニメーション・文言・新規/変更コンポーネント等）は、変更後のスクリーンショットまたは操作を示す動画を PR に添付すること。**
   - `gh pr create` / `gh pr comment` の `--attach` を使う（`gh` 2.99.0 以上が必要）。例: `gh pr create ... --attach './after.png#変更後'`。複数枚はフラグを繰り返す。
   - before/after が示せる場合は両方添付し、PR 本文の表で並べる。

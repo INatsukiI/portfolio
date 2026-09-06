@@ -69,6 +69,20 @@ git diff main...HEAD --stat
 
 **タイトル:** 英語・命令形・70 文字以内
 
+**対応 issue の確認（必須）:**
+
+PR 作成前に、この変更が対応する既存 issue がないか必ず確認する：
+
+```bash
+gh issue list --repo <owner>/<repo> --state open --limit 50
+```
+
+対応する issue があれば、本文に **`Closes #<番号>`** を書く（マージ時に自動クローズされる）。
+
+- **複数 issue を閉じる場合はキーワードを issue ごとに繰り返す。** `Closes #46, #47` はカンマ区切りが効かず **#46 しか閉じない**。必ず `Closes #46, Closes #47, Closes #48` の形式で書く。
+- 部分対応にとどまる issue は `Closes` ではなく `Refs #<番号>` にする。
+- Tracking issue など残す必要があるものは閉じない。
+
 **本文テンプレート:**
 
 ```
@@ -79,6 +93,8 @@ git diff main...HEAD --stat
 ## Test plan
 
 - [ ] <手動確認項目>
+
+Closes #<番号>, Closes #<番号>   ← 対応 issue があれば。なければこの行は省く
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
