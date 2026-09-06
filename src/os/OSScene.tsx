@@ -210,6 +210,7 @@ export default function OSScene() {
             key={ic.id}
             kind={ic.kind}
             label={ic.label}
+            testId={`desktop-icon-${ic.id}`}
             selected={selectedIcon === ic.id}
             compact={compact}
             onOpen={() => {
@@ -291,6 +292,8 @@ export default function OSScene() {
         <DropdownMenu.Root onOpenChange={(open) => { setMenuOpen(open); if (!open) setMenuSearch('') }}>
           <DropdownMenu.Trigger asChild>
             <button
+              aria-label="ランチャー"
+              data-testid="launcher-trigger"
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-md text-xs tracking-widest transition-all duration-150 outline-none flex-shrink-0',
                 menuOpen
@@ -397,6 +400,7 @@ export default function OSScene() {
           {windows.map(w => (
             <button
               key={w.id}
+              data-testid={`taskbar-tab-${w.id}`}
               onClick={() => focusWindow(w.id)}
               className={cn(
                 'flex items-center gap-2 px-3 py-1 rounded-md text-xs flex-shrink-0 transition-all duration-150',

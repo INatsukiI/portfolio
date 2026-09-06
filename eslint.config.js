@@ -20,4 +20,14 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    // Playwright の設定・E2E テストは Node 環境で実行される
+    files: ['playwright.config.ts', 'e2e/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
+    },
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

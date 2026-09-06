@@ -12,6 +12,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
-    exclude: ['node_modules', 'dist', '.claude/**'],
+    // e2e/ は Playwright Test 専用（vitest では実行しない）
+    exclude: ['node_modules', 'dist', '.claude/**', 'e2e/**'],
   },
 })

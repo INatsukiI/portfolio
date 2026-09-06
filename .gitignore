@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/e2e/__screenshots__/
+
 # Claude Code — ローカル専用設定
 .claude/settings.local.json
 
