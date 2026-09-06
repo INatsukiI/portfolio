@@ -33,3 +33,23 @@ jobs:
       - run: npm run check
       - run: npm run test
       - run: npm audit --audit-level=high
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # ブラウザバイナリのダウンロードで時間が伸びるため Lint & Build & Test とは別ジョブにしている
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ failure() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

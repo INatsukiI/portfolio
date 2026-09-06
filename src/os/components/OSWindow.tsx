@@ -28,7 +28,7 @@ interface OSWindowProps {
   plain?: boolean
 }
 
-export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, onFocus, onMove, onResize, onMinimize, onMaximize, children, plain }: OSWindowProps) {
+export function OSWindow({ id, title, x, y, w, h, z, compact, maximized, onClose, onFocus, onMove, onResize, onMinimize, onMaximize, children, plain }: OSWindowProps) {
   const startDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (compact || maximized) return
     e.preventDefault()
@@ -97,6 +97,7 @@ export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, on
 
   return (
     <motion.div
+      data-testid={`window-${id}`}
       onPointerDown={onFocus}
       initial={{ opacity: 0, scale: 0.96, y: -8 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -119,6 +120,7 @@ export function OSWindow({ title, x, y, w, h, z, compact, maximized, onClose, on
         {/* Title bar */}
         <div
           onPointerDown={startDrag}
+          data-testid={`window-titlebar-${id}`}
           className={cn(
             'relative flex items-center gap-3 px-4 py-3 flex-shrink-0 select-none',
             !compact && 'cursor-grab active:cursor-grabbing',

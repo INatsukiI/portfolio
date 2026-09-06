@@ -24,7 +24,8 @@
 | スタイリング | Tailwind CSS v4（`@tailwindcss/vite`）+ インラインスタイル併用 |
 | アイコン | lucide-react |
 | フォント | JetBrains Mono / Space Grotesk（Google Fonts） |
-| テスト | Vitest + @testing-library/react |
+| テスト（単体） | Vitest + @testing-library/react |
+| テスト（E2E）・UI目視確認 | Playwright（`@playwright/test`、Chromium のみ） |
 | デプロイ | GitHub Pages（`main` push で `deploy.yml` が自動デプロイ） |
 
 ---
@@ -37,8 +38,17 @@ npm run build        # 本番ビルド（型エラーも検出される）
 npm run lint         # ESLint チェック
 npm run check        # lint + build を一括実行（修正後は必ずこれを通す）
 npm run preview      # ビルド成果物をローカルで確認
-npm run test         # テスト一括実行（vitest run）
-npm run test:watch   # テストウォッチモード（開発中）
+npm run test         # 単体テスト一括実行（vitest run）
+npm run test:watch   # 単体テストウォッチモード（開発中）
+npm run test:e2e     # E2E テスト（Playwright）。dev サーバーは自動起動される
+npm run test:e2e:ui  # Playwright UI モード（デバッグ用）
+npm run screenshot   # 目視確認用スクリーンショット。事前に別ターミナルで npm run dev が必要
+```
+
+初回のみ Chromium バイナリの取得が必要:
+
+```bash
+npx playwright install chromium
 ```
 
 ## ルール
@@ -46,7 +56,15 @@ npm run test:watch   # テストウォッチモード（開発中）
 - コードを変更したら必ず `npm run check`,`npm run test`を実行し、エラーゼロを確認してから作業完了とすること。
 - コードをコミットする際はブランチを確認して、mainにいる場合はfeature/xxxのブランチを切ってコミットすること。
 - `package.json` を変更したら `npm install` を実行して `package-lock.json` を同期すること。
-- UI に関わる変更は、`npm run dev` を起動し、ブラウザ（または headless browser）で実際の画面を目視確認してから完了とすること。
+- UI に関わる変更は、実際の画面を目視確認してから完了とすること。手順:
+  1. `npm run dev` を起動する
+  2. `npm run screenshot -- <出力パス> [URL] [幅x高さ]` でスクリーンショットを撮り、画像を確認する（`.claude/skills/ui-preview` skill も参照）
+  3. 主要フローに関わる変更なら `npm run test:e2e` も通す
+- **見た目に変更が入る PR（レイアウト・色・アニメーション・文言・新規/変更コンポーネント等）は、変更後のスクリーンショットまたは操作を示す動画を PR に添付すること。**
+  - `gh pr create` / `gh pr comment` の `--attach` を使う（`gh` 2.99.0 以上が必要）。例: `gh pr create ... --attach './after.png#変更後'`。複数枚はフラグを繰り返す。
+  - before/after が示せる場合は両方添付し、PR 本文の表で並べる。
+  - PR 本文に `![](path)` を書いてその場で URL 置換させたい場合、参照文字列と `--attach` に渡すパスを**完全一致**させる（不一致だと置換されず末尾に追記される）。確実を期すなら本文に画像参照を書かず、投稿後に返る `user-attachments/assets/...` URL で本文を編集する。
+  - `gh` が古く `--attach` が使えない環境では、本文にその旨を明記し `npm run screenshot` の結果を別途共有する。
 - スタック・ディレクトリ構成・コーディング規約が変わったら、このファイル（CLAUDE.md）を都度更新すること。
 - 新しい npm パッケージを追加する前に、既存の依存関係で代替できないか確認すること。
 - 繰り返し使う作業フロー（PR 作成・コンポーネント追加パターンなど）は `.claude/skills/` に skill として追加することを検討する。
@@ -57,6 +75,13 @@ npm run test:watch   # テストウォッチモード（開発中）
 - 既存コンポーネントの **表示内容・Props・ロジック** を変更した場合は、対応する `*.test.tsx` が壊れていないか確認し、必要なら更新すること。
 - テストは「ユーザーが見る振る舞い」を中心に書く（実装詳細ではなく、表示・インタラクション・状態変化を検証）。
 - 外部 API（fetch）はモックし、成功・失敗の両パスをカバーすること。
+
+#### E2E テスト（`e2e/`）
+
+- Playwright Test で記述する。テストは `e2e/*.spec.ts`（vitest 対象外）。
+- 主要フロー（ウィンドウの開閉・最小化・最大化・移動・リサイズ、Contact フォーム）の回帰を守るのが目的。デスクトップ OS の骨格に関わる変更をしたら該当 spec を更新すること。
+- 要素の特定は `data-testid`（`desktop-icon-<id>` / `window-<id>` / `window-titlebar-<id>` / `taskbar-tab-<id>` / `launcher-trigger`）と ARIA ロール／ラベルを使う。CSS クラスに依存しない。
+- `npm run check` には含めない（ローカルの実行速度優先）。CI では `ci.yml` の独立ジョブ「E2E (Playwright)」で実行される。
 
 ## PR レビュー・マージフロー
 
@@ -106,11 +131,15 @@ src/
 ├── profile.ts           # ポートフォリオコンテンツ（ここを編集して情報を更新）
 └── index.css            # Tailwind + shadcn テーマ変数
 
+e2e/                     # Playwright E2E テスト（*.spec.ts）＋ helpers.ts
+scripts/screenshot.mjs   # 目視確認用スクリーンショット取得スクリプト
+playwright.config.ts     # Playwright 設定（testDir: e2e / webServer: npm run dev / Chromium のみ）
+
 .github/
 ├── dependabot.yml     # 依存更新（npm / github-actions）を weekly・groups で束ねて発行
 ├── actions/setup/action.yml  # Node セットアップ + npm ci の composite action（ci.yml / deploy.yml から利用）
 └── workflows/
-    ├── ci.yml          # main への pull_request で Lint & Build & Test（マージは必ず PR 経由）
+    ├── ci.yml          # main への pull_request で Lint & Build & Test（+ 独立ジョブで E2E）。マージは必ず PR 経由
     ├── dependabot-auto-merge.yml  # Dependabot の patch/minor PR に auto-merge を付与
     └── deploy.yml      # main への push で GitHub Pages へデプロイ
 ```

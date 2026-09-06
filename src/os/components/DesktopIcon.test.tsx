@@ -39,6 +39,16 @@ describe('DesktopIcon', () => {
     expect((container.firstChild as HTMLElement).className).not.toContain('ring-1')
   })
 
+  it('testId を渡すと data-testid に設定される', () => {
+    render(<DesktopIcon {...baseProps} testId="desktop-icon-about" />)
+    expect(screen.getByTestId('desktop-icon-about')).toBeTruthy()
+  })
+
+  it('testId 未指定のとき data-testid は付与されない', () => {
+    render(<DesktopIcon {...baseProps} />)
+    expect(screen.getByRole('button', { name: 'profile.txt' }).hasAttribute('data-testid')).toBe(false)
+  })
+
   it('role=button・tabIndex=0・aria-label が設定される', () => {
     render(<DesktopIcon {...baseProps} />)
     const el = screen.getByRole('button', { name: 'profile.txt' })
