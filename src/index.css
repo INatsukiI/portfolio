@@ -6,8 +6,9 @@
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: 'Space Grotesk', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* 和文は Noto Sans JP を明示（DADS タイポグラフィ推奨） */
+  --font-sans: 'Space Grotesk', 'Noto Sans JP', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Noto Sans JP', monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -61,7 +62,8 @@
   --secondary:            oklch(0.13 0.02 250);
   --secondary-foreground: oklch(0.86 0.026 224);
   --muted:                oklch(0.13 0.02 250);
-  --muted-foreground:     oklch(0.86 0.026 224 / 50%);
+  /* 補助テキスト: 暗背景で 4.5:1 以上を満たす不透明色（半透明を避ける / DADS カラー） */
+  --muted-foreground:     oklch(0.75 0.035 224);
   --accent:               oklch(0.82 0.16 204 / 15%);  /* cyan dim */
   --accent-foreground:    oklch(0.82 0.16 204);
   --destructive:          oklch(0.60 0.22 15);          /* #ff4d6a */
@@ -96,7 +98,7 @@
   --secondary:            oklch(0.13 0.02 250);
   --secondary-foreground: oklch(0.86 0.026 224);
   --muted:                oklch(0.13 0.02 250);
-  --muted-foreground:     oklch(0.86 0.026 224 / 50%);
+  --muted-foreground:     oklch(0.75 0.035 224);
   --accent:               oklch(0.82 0.16 204 / 15%);
   --accent-foreground:    oklch(0.82 0.16 204);
   --destructive:          oklch(0.60 0.22 15);
@@ -130,6 +132,9 @@
 
   body {
     margin: 0;
+    /* 本文の基準サイズ 16px（DADS タイポグラフィ） */
+    font-size: 1rem;
+    line-height: 1.75;
     @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
   }
@@ -139,6 +144,52 @@
     height: 100svh;
     overflow: hidden;
   }
+}
+
+/* モーション設定の尊重（WCAG 2.3.3 / 2.2.2・DADS） */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .terminal-cursor {
+    animation: none !important;
+    background-color: var(--cursor-on-bg, cyan);
+    color: var(--cursor-on-fg, black);
+  }
+}
+
+/* 強制カラーモード / ハイコントラスト対応（DADS 課題6）
+   半透明ボーダーや box-shadow で表現している境界を実線で担保する */
+@media (forced-colors: active) {
+  .fc-border {
+    border: 1px solid CanvasText !important;
+  }
+  .fc-border-b {
+    border-bottom: 1px solid CanvasText !important;
+  }
+  .fc-border-t {
+    border-top: 1px solid CanvasText !important;
+  }
+}
+
+/* キーボード操作時にメインへ飛ぶスキップリンク（WCAG 2.4.1） */
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -48px;
+  z-index: 1000;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: var(--popover);
+  color: var(--foreground);
+  border: 1px solid var(--ring);
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 8px;
 }
 
 .no-scrollbar {

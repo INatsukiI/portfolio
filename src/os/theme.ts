@@ -18,7 +18,8 @@ export const OS = {
 
   // text
   ink:         '#0a0f1a',
-  inkSoft:     'rgba(200,216,232,0.5)',
+  // 補助テキスト: 暗背景で 4.5:1 以上（半透明を避けた不透明色 / DADS カラー）
+  inkSoft:     '#93a7ba',
 
   // accent
   accent:      '#00d4ff',

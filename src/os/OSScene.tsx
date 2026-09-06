@@ -28,9 +28,13 @@ const DESKTOP_STYLE = {
     linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px)
   `,
   backgroundSize: '100% 100%, 100% 100%, 40px 40px, 40px 40px',
-  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+  fontFamily: 'var(--font-sans)',
   color: '#c8d8e8',
 } as const
+
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
 
 export default function OSScene() {
   const screenRef = useRef<HTMLDivElement>(null)
@@ -44,15 +48,28 @@ export default function OSScene() {
   })
   const [zTop, setZTop] = useState(11)
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
-  const [booting, setBooting] = useState(true)
+  // 「視差効果を減らす」設定時は起動アニメーションを省略（WCAG 2.3.3）
+  const [booting, setBooting] = useState(() => !prefersReducedMotion())
   const [clock, setClock] = useState(currentClock())
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuSearch, setMenuSearch] = useState('')
 
+  // ウィンドウを開いた操作要素を記録し、閉じたらそこへフォーカスを戻す（WCAG 2.4.3）
+  const triggerRef = useRef<Record<string, HTMLElement | null>>({})
+  const launcherRef = useRef<HTMLButtonElement>(null)
+
+  const restoreFocus = (id: string) => {
+    const el = triggerRef.current[id]
+    delete triggerRef.current[id]
+    const target = el && el.isConnected ? el : launcherRef.current
+    if (target) requestAnimationFrame(() => target.focus())
+  }
+
   useEffect(() => {
+    if (!booting) return
     const t = setTimeout(() => setBooting(false), 2000)
     return () => clearTimeout(t)
-  }, [])
+  }, [booting])
 
   useEffect(() => {
     const i = setInterval(() => setClock(currentClock()), 30000)
@@ -68,6 +85,7 @@ export default function OSScene() {
         const visible = ws.filter(w => !w.minimized)
         if (visible.length === 0) return ws
         const top = visible.reduce((a, b) => (a.z > b.z ? a : b))
+        restoreFocus(top.id)
         return ws.filter(w => w.id !== top.id)
       })
     }
@@ -76,6 +94,10 @@ export default function OSScene() {
   }, [menuOpen])
 
   const openWindow = (id: string) => {
+    const active = document.activeElement
+    if (active instanceof HTMLElement && active !== document.body) {
+      triggerRef.current[id] = active
+    }
     const newZ = zTop + 1
     setZTop(newZ)
     setWindows((ws) => {
@@ -102,7 +124,10 @@ export default function OSScene() {
     })
   }
 
-  const closeWindow = (id: string) => setWindows(ws => ws.filter(w => w.id !== id))
+  const closeWindow = (id: string) => {
+    restoreFocus(id)
+    setWindows(ws => ws.filter(w => w.id !== id))
+  }
   const focusWindow = (id: string) => {
     const newZ = zTop + 1
     setZTop(newZ)
@@ -169,9 +194,11 @@ export default function OSScene() {
       className="relative w-full h-full overflow-hidden select-none"
       style={DESKTOP_STYLE}
     >
+      <a href="#os-main" className="skip-link">メインコンテンツへスキップ</a>
+
       {/* Top bar */}
-      <div
-        className="absolute top-0 left-0 right-0 flex items-center px-4 z-[100]"
+      <header
+        className="fc-border-b absolute top-0 left-0 right-0 flex items-center px-4 z-[100]"
         style={{
           height: compact ? 36 : 40,
           background: 'rgba(6,14,28,0.8)',
@@ -179,27 +206,29 @@ export default function OSScene() {
           borderBottom: '1px solid rgba(0,212,255,0.1)',
         }}
       >
-        <div
-          className="font-bold tracking-[0.2em] text-xs"
+        <h1
+          className="font-bold tracking-[0.2em] text-sm m-0"
           style={{ color: '#00d4ff', fontFamily: "'JetBrains Mono', monospace" }}
         >
           OMU/OS
-        </div>
+          <span className="sr-only"> — {PROFILE.name} のポートフォリオ</span>
+        </h1>
         {compact ? null : (
-          <div className="flex items-center gap-6 ml-8 text-xs" style={{ color: 'rgba(200,216,232,0.45)' }}>
+          <div className="flex items-center gap-6 ml-8 text-sm" style={{ color: '#93a7ba' }} aria-hidden="true">
             {['FILE', 'EDIT', 'VIEW', 'WINDOW'].map(m => (
-              <span key={m} className="hover:text-cyan-400 cursor-default transition-colors">{m}</span>
+              <span key={m} className="cursor-default">{m}</span>
             ))}
           </div>
         )}
-        <div className="ml-auto flex items-center gap-4 text-xs" style={{ fontFamily: "'JetBrains Mono', monospace", color: 'rgba(200,216,232,0.45)' }}>
+        <div className="ml-auto flex items-center gap-4 text-sm" style={{ fontFamily: "'JetBrains Mono', monospace", color: '#93a7ba' }}>
           {compact ? null : <span>{PROFILE.handle}</span>}
           <span style={{ color: '#00d4ff' }}>{clock}</span>
         </div>
-      </div>
+      </header>
 
       {/* Desktop icons */}
-      <div
+      <nav
+        aria-label="アプリ一覧"
         className={cn('absolute z-[1]', compact
           ? 'top-10 left-0 right-0 p-2 grid grid-cols-3 gap-1'
           : 'top-12 left-3 flex flex-col gap-1'
@@ -219,33 +248,34 @@ export default function OSScene() {
             }}
           />
         ))}
-      </div>
+      </nav>
 
-      {/* System info panel — desktop only */}
+      {/* System info panel — desktop only（装飾的なので支援技術からは隠す） */}
       {compact ? null : (
         <div
-          className="absolute top-12 right-3 z-[1] w-48 rounded-lg p-3 text-xs"
+          aria-hidden="true"
+          className="fc-border absolute top-12 right-3 z-[1] w-52 rounded-lg p-3 text-sm"
           style={{
             background: 'rgba(6,14,28,0.7)',
             backdropFilter: 'blur(16px)',
             border: '1px solid rgba(0,212,255,0.1)',
             fontFamily: "'JetBrains Mono', monospace",
-            color: 'rgba(200,216,232,0.5)',
+            color: '#93a7ba',
           }}
         >
-          <div className="flex items-center gap-1.5 text-[10px] tracking-widest mb-3" style={{ color: '#00d4ff' }}>
-            <OSIcon kind="cpu" size={11} color="#00d4ff" />SYSTEM
+          <div className="flex items-center gap-1.5 text-sm tracking-wide mb-3" style={{ color: '#00d4ff' }}>
+            <OSIcon kind="cpu" size={13} color="#00d4ff" />SYSTEM
           </div>
           {[
             ['USER', PROFILE.handle],
             ['HOST', 'omu-node.local'],
             ['UP',   PROFILE.exp],
           ].map(([k, v]) => (
-            <div key={k} className="flex justify-between mb-1">
-              <span>{k}</span><span style={{ color: 'rgba(200,216,232,0.8)' }}>{v}</span>
+            <div key={k} className="flex justify-between gap-2 mb-1">
+              <span>{k}</span><span style={{ color: '#c8d8e8' }}>{v}</span>
             </div>
           ))}
-          <div className="mt-3 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+          <div className="mt-3 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.12)' }}>
             <motion.div
               className="h-full rounded-full"
               style={{ background: 'linear-gradient(90deg, #00d4ff, #7c3aed)', width: '72%' }}
@@ -254,33 +284,36 @@ export default function OSScene() {
               transition={{ duration: 1.2, delay: 2.2, ease: 'easeOut' }}
             />
           </div>
-          <div className="mt-1 text-[10px]">CPU 72% · MEM 4.3 GB</div>
+          <div className="mt-1 text-sm">CPU 72% · MEM 4.3 GB</div>
         </div>
       )}
 
       {/* Windows */}
-      <AnimatePresence>
-        {windows.filter(w => !w.minimized).map(w => (
-          <OSWindow
-            key={w.id}
-            {...w}
-            compact={compact}
-            plain={w.id === 'terminal'}
-            onClose={() => closeWindow(w.id)}
-            onFocus={() => focusWindow(w.id)}
-            onMove={(x, y) => moveWindow(w.id, x, y)}
-            onResize={(rw, rh) => resizeWindow(w.id, rw, rh)}
-            onMinimize={() => minimizeWindow(w.id)}
-            onMaximize={() => maximizeWindow(w.id)}
-          >
-            {renderWindowContent(w)}
-          </OSWindow>
-        ))}
-      </AnimatePresence>
+      <main id="os-main" aria-label="ウィンドウ" tabIndex={-1} className="outline-none">
+        <AnimatePresence>
+          {windows.filter(w => !w.minimized).map(w => (
+            <OSWindow
+              key={w.id}
+              {...w}
+              compact={compact}
+              plain={w.id === 'terminal'}
+              onClose={() => closeWindow(w.id)}
+              onFocus={() => focusWindow(w.id)}
+              onMove={(x, y) => moveWindow(w.id, x, y)}
+              onResize={(rw, rh) => resizeWindow(w.id, rw, rh)}
+              onMinimize={() => minimizeWindow(w.id)}
+              onMaximize={() => maximizeWindow(w.id)}
+            >
+              {renderWindowContent(w)}
+            </OSWindow>
+          ))}
+        </AnimatePresence>
+      </main>
 
       {/* Bottom taskbar */}
-      <div
-        className="absolute bottom-0 left-0 right-0 flex items-center gap-2 px-3 z-[100] overflow-visible"
+      <nav
+        aria-label="タスクバー"
+        className="fc-border-t absolute bottom-0 left-0 right-0 flex items-center gap-2 px-3 z-[100] overflow-visible"
         style={{
           height: compact ? 48 : 44,
           background: 'rgba(6,14,28,0.85)',
@@ -292,17 +325,19 @@ export default function OSScene() {
         <DropdownMenu.Root onOpenChange={(open) => { setMenuOpen(open); if (!open) setMenuSearch('') }}>
           <DropdownMenu.Trigger asChild>
             <button
-              aria-label="ランチャー"
+              ref={launcherRef}
+              aria-label="ランチャーを開く"
               data-testid="launcher-trigger"
               className={cn(
-                'flex items-center gap-2 px-3 py-1.5 rounded-md text-xs tracking-widest transition-all duration-150 outline-none flex-shrink-0',
+                'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm tracking-wide transition-all duration-150 flex-shrink-0',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 menuOpen
-                  ? 'bg-cyan-500/20 text-cyan-400 ring-1 ring-cyan-500/40'
-                  : 'bg-white/5 hover:bg-cyan-500/10 hover:text-cyan-400',
+                  ? 'bg-cyan-500/20 text-cyan-300 ring-1 ring-cyan-500/50'
+                  : 'bg-white/5 hover:bg-cyan-500/10 hover:text-cyan-300',
               )}
               style={{ fontFamily: "'JetBrains Mono', monospace" }}
             >
-              <span style={{ color: '#00d4ff' }}>⬡</span>
+              <span style={{ color: '#00d4ff' }} aria-hidden="true">⬡</span>
               {compact ? null : 'LAUNCH'}
             </button>
           </DropdownMenu.Trigger>
@@ -312,9 +347,9 @@ export default function OSScene() {
               side="top"
               align="start"
               sideOffset={6}
-              className="outline-none z-[9999] w-56 rounded-xl overflow-hidden"
+              className="fc-border outline-none z-[9999] w-56 rounded-xl overflow-hidden"
               style={{
-                background: 'rgba(6,14,30,0.92)',
+                background: 'rgba(6,14,30,0.96)',
                 backdropFilter: 'blur(24px)',
                 border: '1px solid rgba(0,212,255,0.18)',
                 boxShadow: '0 -8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)',
@@ -322,31 +357,32 @@ export default function OSScene() {
             >
               {/* Header */}
               <div
-                className="px-4 py-3 border-b"
+                className="fc-border-b px-4 py-3 border-b"
                 style={{ borderColor: 'rgba(0,212,255,0.12)' }}
               >
                 <div
-                  className="text-xs tracking-widest font-bold"
+                  className="text-sm tracking-wide font-bold"
                   style={{ color: '#00d4ff', fontFamily: "'JetBrains Mono', monospace" }}
                 >
                   OMU/OS
                 </div>
-                <div className="text-[11px] mt-0.5" style={{ color: 'rgba(200,216,232,0.4)' }}>
+                <div className="text-sm mt-0.5" style={{ color: '#93a7ba' }}>
                   {PROFILE.handle}
                 </div>
               </div>
 
               {/* Search */}
-              <div className="px-3 py-2 border-b" style={{ borderColor: 'rgba(0,212,255,0.08)' }}>
+              <div className="fc-border-b px-3 py-2 border-b" style={{ borderColor: 'rgba(0,212,255,0.08)' }}>
                 <input
                   value={menuSearch}
                   onChange={e => setMenuSearch(e.target.value)}
                   onKeyDown={e => e.stopPropagation()}
                   placeholder="search..."
-                  className="w-full bg-transparent outline-none text-xs"
+                  aria-label="アプリを検索"
+                  className="w-full rounded bg-transparent px-1 py-0.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   style={{
                     fontFamily: "'JetBrains Mono', monospace",
-                    color: 'rgba(200,216,232,0.8)',
+                    color: '#c8d8e8',
                   }}
                   autoComplete="off"
                   spellCheck={false}
@@ -362,7 +398,7 @@ export default function OSScene() {
                     : DESKTOP_ICONS.filter(ic => ic.launchOnly)
                   if (items.length === 0) {
                     return (
-                      <div className="px-4 py-3 text-xs" style={{ color: 'rgba(200,216,232,0.3)', fontFamily: "'JetBrains Mono', monospace" }}>
+                      <div className="px-4 py-3 text-sm" style={{ color: '#93a7ba', fontFamily: "'JetBrains Mono', monospace" }}>
                         no results
                       </div>
                     )
@@ -371,16 +407,8 @@ export default function OSScene() {
                     <DropdownMenu.Item
                       key={ic.id}
                       onSelect={() => openWindow(ic.id)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs cursor-pointer outline-none transition-colors"
-                      style={{ fontFamily: "'JetBrains Mono', monospace", color: 'rgba(200,216,232,0.7)' }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.background = 'rgba(0,212,255,0.08)'
-                        e.currentTarget.style.color = '#00d4ff'
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.background = 'transparent'
-                        e.currentTarget.style.color = 'rgba(200,216,232,0.7)'
-                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm cursor-pointer outline-none transition-colors text-[#c8d8e8] data-[highlighted]:bg-[rgba(0,212,255,0.12)] data-[highlighted]:text-primary"
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
                     >
                       <OSIcon kind={ic.kind} size={16} color="currentColor" />
                       {ic.label}
@@ -393,7 +421,7 @@ export default function OSScene() {
         </DropdownMenu.Root>
 
         {/* Separator */}
-        <div className="w-px h-5 flex-shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }} />
+        <div className="w-px h-5 flex-shrink-0" style={{ background: 'rgba(255,255,255,0.16)' }} aria-hidden="true" />
 
         {/* Open window tabs */}
         <div className="flex gap-2 flex-1 min-w-0 overflow-x-auto">
@@ -402,31 +430,35 @@ export default function OSScene() {
               key={w.id}
               data-testid={`taskbar-tab-${w.id}`}
               onClick={() => focusWindow(w.id)}
+              aria-pressed={w.z === zTop && !w.minimized}
+              aria-label={w.title.split('—')[0].trim()}
               className={cn(
-                'flex items-center gap-2 px-3 py-1 rounded-md text-xs flex-shrink-0 transition-all duration-150',
-                w.z === zTop
-                  ? 'bg-cyan-500/15 ring-1 ring-cyan-500/30 text-cyan-300'
-                  : 'bg-white/5 text-[rgba(200,216,232,0.5)] hover:bg-white/8 hover:text-[rgba(200,216,232,0.8)]',
+                'flex items-center gap-2 px-3 py-1.5 min-h-[32px] rounded-md text-sm flex-shrink-0 transition-all duration-150',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                w.z === zTop && !w.minimized
+                  ? 'bg-cyan-500/20 ring-1 ring-cyan-500/50 text-cyan-200'
+                  : 'bg-white/5 text-[#93a7ba] hover:bg-white/10 hover:text-[#c8d8e8]',
               )}
               style={{
-                maxWidth: compact ? 100 : 160,
+                maxWidth: compact ? 120 : 180,
                 fontFamily: "'JetBrains Mono', monospace",
               }}
             >
-              <OSIcon kind={w.icon} size={12} color="currentColor" />
+              <OSIcon kind={w.icon} size={14} color="currentColor" />
               {compact ? null : (
                 <span className="truncate">{w.title.split('—')[0].trim()}</span>
               )}
             </button>
           ))}
         </div>
-      </div>
+      </nav>
 
       {/* Boot splash */}
       <AnimatePresence>
         {booting ? (
           <motion.div
             key="boot"
+            aria-hidden="true"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -446,8 +478,8 @@ export default function OSScene() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-xs tracking-widest"
-              style={{ color: 'rgba(200,216,232,0.3)', fontFamily: "'JetBrains Mono', monospace" }}
+              className="text-sm tracking-widest"
+              style={{ color: '#93a7ba', fontFamily: "'JetBrains Mono', monospace" }}
             >
               {OS_VERSION} · INITIALIZING
             </motion.div>
@@ -467,8 +499,8 @@ export default function OSScene() {
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 0.5, 0] }}
               transition={{ duration: 1.2, delay: 0.6, repeat: 1 }}
-              className="text-[10px]"
-              style={{ color: 'rgba(0,212,255,0.4)', fontFamily: "'JetBrains Mono', monospace" }}
+              className="text-sm"
+              style={{ color: 'rgba(0,212,255,0.7)', fontFamily: "'JetBrains Mono', monospace" }}
             >
               LOADING KERNEL...
             </motion.div>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { GitFork, AtSign, ExternalLink, Send, Mail } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PROFILE } from '../../profile'
@@ -14,11 +14,16 @@ const LINK_ICON: Record<string, LucideIcon> = {
   x:  AtSign,
 }
 
-const INPUT_CLASS =
-  'h-7 font-mono text-xs border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 p-0 placeholder:text-muted-foreground/50 flex-1'
+const FIELD_CLASS = 'h-9 font-mono'
 
 export function WinContact() {
   const { contact, email } = PROFILE
+
+  const nameId    = useId()
+  const emailId   = useId()
+  const emailErrId = useId()
+  const subjectId = useId()
+  const bodyId    = useId()
 
   const [fromName,   setFromName]   = useState('')
   const [fromEmail,  setFromEmail]  = useState('')
@@ -86,158 +91,179 @@ export function WinContact() {
     else showFeedback('ポップアップがブロックされました。ブラウザの設定をご確認ください', 'error')
   }
 
+  const labelClass = 'font-mono text-sm tracking-wide uppercase block mb-1'
+
   return (
-    <div className="font-sans text-sm flex flex-col gap-4">
+    <div className="font-sans flex flex-col gap-5">
 
       {/* ── Links ─────────────────────────────────── */}
       <div>
-        <SectionHead>links/</SectionHead>
-        <div className="mt-3 rounded-md border border-border overflow-hidden">
+        <SectionHead as="h3">links/</SectionHead>
+        <ul className="mt-3 fc-border rounded-md border border-border overflow-hidden list-none p-0 m-0">
           {contact.filter(c => c.key !== 'zenn').map((c) => {
             const Icon = LINK_ICON[c.key] ?? ExternalLink
             return (
-              <a
-                key={c.key}
-                href={`https://${c.val}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/10 border-b border-border/50 last:border-0 no-underline"
-              >
-                <Icon size={14} style={{ color: OS.accent }} />
-                <span
-                  className="font-mono text-[10px] tracking-widest uppercase w-12"
-                  style={{ color: OS.inkSoft }}
+              <li key={c.key}>
+                <a
+                  href={`https://${c.val}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/10 border-b border-border/50 last:border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                 >
-                  {c.label}
-                </span>
-                <span className="font-mono text-xs text-primary flex-1">{c.val}</span>
-                <ExternalLink size={10} style={{ color: OS.inkSoft }} />
-              </a>
+                  <Icon size={16} style={{ color: OS.accent }} aria-hidden="true" />
+                  <span
+                    className="font-mono text-sm tracking-wide uppercase w-14 flex-shrink-0"
+                    style={{ color: OS.inkSoft }}
+                  >
+                    {c.label}
+                  </span>
+                  <span className="font-mono text-sm text-primary flex-1 underline underline-offset-2 break-all">{c.val}</span>
+                  <ExternalLink size={12} style={{ color: OS.inkSoft }} aria-hidden="true" />
+                  <span className="sr-only">（新しいタブで開く）</span>
+                </a>
+              </li>
             )
           })}
-        </div>
+        </ul>
       </div>
 
       {/* ── Compose ───────────────────────────────── */}
       <div>
-        <SectionHead>message/</SectionHead>
-        <div
-          className="mt-3 rounded-md border border-border overflow-hidden"
+        <SectionHead as="h3">message/</SectionHead>
+        <form
+          className="mt-3 fc-border rounded-md border border-border overflow-hidden flex flex-col"
           style={{ background: 'rgba(6,14,28,0.7)' }}
+          onSubmit={(e) => e.preventDefault()}
         >
           {/* NEW MESSAGE bar */}
           <div
-            className="flex items-center gap-2 px-4 py-2.5 border-b border-border/50"
+            className="fc-border-b flex items-center gap-2 px-4 py-2.5 border-b border-border/50"
             style={{ background: OS.chromeHi }}
           >
-            <span className="font-mono text-[10px] tracking-widest" style={{ color: OS.accent }}>
+            <span className="font-mono text-sm tracking-wide" style={{ color: OS.accent }}>
               NEW MESSAGE
             </span>
           </div>
 
-          {/* To */}
-          <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border/50">
-            <span className="font-mono text-[10px] tracking-widest uppercase w-14" style={{ color: OS.inkSoft }}>
-              To
-            </span>
-            <span className="font-mono text-xs" style={{ color: OS.chromeFg }}>{email}</span>
-          </div>
+          <div className="flex flex-col gap-4 px-4 py-4">
+            {/* To */}
+            <div>
+              <span className={labelClass} style={{ color: OS.inkSoft }}>To</span>
+              <span className="font-mono text-sm break-all" style={{ color: OS.chromeFg }}>{email}</span>
+            </div>
 
-          {/* From (name + email 横並び) */}
-          <div
-            className="flex flex-col border-b border-border/50"
-            style={emailError ? { borderColor: OS.red } : undefined}
-          >
-            <div className="flex items-center gap-3 px-4 py-2">
-              <span className="font-mono text-[10px] tracking-widest uppercase w-14" style={{ color: OS.inkSoft }}>
-                From
-              </span>
+            {/* お名前 */}
+            <div>
+              <label htmlFor={nameId} className={labelClass} style={{ color: OS.inkSoft }}>
+                お名前 <span style={{ color: OS.red }}>*</span>
+              </label>
               <Input
+                id={nameId}
                 placeholder="お名前"
                 value={fromName}
                 onChange={(e) => setFromName(e.target.value)}
-                className={INPUT_CLASS}
-                style={{ color: OS.chromeFg }}
+                className={FIELD_CLASS}
+                required
               />
-              <span style={{ color: OS.bodyEdge }}>|</span>
+            </div>
+
+            {/* メールアドレス */}
+            <div>
+              <label htmlFor={emailId} className={labelClass} style={{ color: OS.inkSoft }}>
+                メールアドレス <span style={{ color: OS.red }}>*</span>
+              </label>
               <Input
+                id={emailId}
                 placeholder="メールアドレス"
                 type="email"
                 value={fromEmail}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 onBlur={handleEmailBlur}
-                className={INPUT_CLASS}
-                style={{ color: emailError ? OS.red : OS.chromeFg }}
+                className={FIELD_CLASS}
+                required
+                aria-invalid={emailError}
+                aria-describedby={emailError ? emailErrId : undefined}
+              />
+              {emailError && (
+                <p
+                  id={emailErrId}
+                  role="alert"
+                  className="mt-1.5 font-mono text-sm"
+                  style={{ color: OS.red }}
+                >
+                  ✕ 有効なメールアドレスを入力してください
+                </p>
+              )}
+            </div>
+
+            {/* 件名 */}
+            <div>
+              <label htmlFor={subjectId} className={labelClass} style={{ color: OS.inkSoft }}>
+                件名（任意）
+              </label>
+              <Input
+                id={subjectId}
+                placeholder="件名（任意）"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className={FIELD_CLASS}
               />
             </div>
-            {emailError && (
-              <div className="px-4 pb-1.5 font-mono text-[10px]" style={{ color: OS.red }}>
-                ✕ 有効なメールアドレスを入力してください
-              </div>
-            )}
-          </div>
 
-          {/* Subject */}
-          <div className="flex items-center gap-3 px-4 py-2 border-b border-border/50">
-            <span className="font-mono text-[10px] tracking-widest uppercase w-14" style={{ color: OS.inkSoft }}>
-              Sub
-            </span>
-            <Input
-              placeholder="件名（任意）"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className={INPUT_CLASS}
-              style={{ color: OS.chromeFg }}
-            />
-          </div>
-
-          {/* Body */}
-          <div className="px-4 pt-3 pb-2">
-            <Textarea
-              placeholder="メッセージを入力してください..."
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              className="font-mono text-xs min-h-[96px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 p-0 placeholder:text-muted-foreground/50"
-              style={{ color: OS.chromeFg }}
-            />
+            {/* 本文 */}
+            <div>
+              <label htmlFor={bodyId} className={labelClass} style={{ color: OS.inkSoft }}>
+                メッセージ <span style={{ color: OS.red }}>*</span>
+              </label>
+              <Textarea
+                id={bodyId}
+                placeholder="メッセージを入力してください..."
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                className="font-mono text-sm min-h-[104px] resize-y"
+                required
+              />
+            </div>
           </div>
 
           {/* Send buttons */}
           <div
-            className="flex justify-end items-center gap-2 px-4 py-3 border-t border-border/50"
+            className="fc-border-t flex flex-wrap justify-end items-center gap-2 px-4 py-3 border-t border-border/50"
             style={{ background: OS.bodyShade }}
           >
             {(feedback || hintMessage) && (
               <span
                 role="status"
                 aria-live="polite"
-                className="font-mono text-[10px] mr-auto"
+                className="font-mono text-sm mr-auto"
                 style={{ color: feedback ? (feedback.kind === 'success' ? OS.green : OS.red) : OS.inkSoft }}
               >
                 {feedback ? `${feedback.kind === 'success' ? '✓' : '✕'} ${feedback.text}` : `› ${hintMessage}`}
               </span>
             )}
             <Button
+              type="button"
               size="sm"
               variant="outline"
               disabled={!canSend}
               onClick={handleMailApp}
-              className="font-mono text-[11px] tracking-widest gap-1.5"
+              className="font-mono text-sm tracking-wide gap-1.5 fc-border"
             >
-              <Mail size={12} />
+              <Mail size={14} aria-hidden="true" />
               MAIL APP
             </Button>
             <Button
+              type="button"
               size="sm"
               disabled={!canSend}
               onClick={handleGmail}
-              className="font-mono text-[11px] tracking-widest gap-1.5"
+              className="font-mono text-sm tracking-wide gap-1.5 fc-border"
             >
-              <Send size={12} />
+              <Send size={14} aria-hidden="true" />
               GMAIL
             </Button>
           </div>
-        </div>
+        </form>
       </div>
 
     </div>

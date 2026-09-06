@@ -36,11 +36,11 @@ export function DesktopIcon({ kind, label, onOpen, selected, compact, testId }: 
       onDoubleClick={handleClick}
       onKeyDown={handleKeyDown}
       className={cn(
-        'flex flex-col items-center gap-2 p-2 rounded-lg cursor-default select-none transition-all duration-150 group',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60',
-        compact ? 'w-full' : 'w-20',
+        'flex flex-col items-center gap-2 p-2 rounded-lg cursor-pointer select-none transition-all duration-150 group',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent focus-visible:ring-primary',
+        compact ? 'w-full' : 'w-24',
         selected
-          ? 'bg-cyan-500/10 ring-1 ring-cyan-500/40'
+          ? 'bg-cyan-500/10 ring-1 ring-cyan-500/50'
           : 'hover:bg-white/5',
       )}
       style={{ touchAction: 'manipulation' }}
@@ -55,17 +55,14 @@ export function DesktopIcon({ kind, label, onOpen, selected, compact, testId }: 
       >
         <OSIcon
           kind={kind}
-          size={compact ? 20 : 20}
-          color={selected ? '#00d4ff' : 'rgba(200,216,232,0.75)'}
+          size={22}
+          color={selected ? '#00d4ff' : '#c8d8e8'}
         />
       </div>
       <span
-        className="text-center leading-tight"
+        className="text-center leading-tight text-sm font-mono"
         style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 10,
-          color: selected ? '#00d4ff' : 'rgba(200,216,232,0.6)',
-          whiteSpace: 'nowrap',
+          color: selected ? '#00d4ff' : '#c8d8e8',
         }}
       >
         {label}

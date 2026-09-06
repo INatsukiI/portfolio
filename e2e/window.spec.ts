@@ -30,7 +30,8 @@ test('最大化で画面幅いっぱいに広がり、もう一度押すと元�
   await win.getByRole('button', { name: '最大化' }).click()
   await expect.poll(async () => (await box(win)).width).toBeGreaterThan(1000)
 
-  await win.getByRole('button', { name: '最大化' }).click()
+  // 最大化中はトグルボタンの名前が「元のサイズに戻す」に変わる
+  await win.getByRole('button', { name: '元のサイズに戻す' }).click()
   // about の初期幅は 520。最大化前のサイズ帯（600未満）へ戻る
   await expect.poll(async () => (await box(win)).width).toBeLessThan(600)
 })

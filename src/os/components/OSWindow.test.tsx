@@ -48,11 +48,21 @@ describe('OSWindow', () => {
     expect(screen.getByText('テストコンテンツ')).toBeTruthy()
   })
 
+  it('role="dialog" とタイトルで名前付けされている', () => {
+    render(<OSWindow {...baseProps}><div>content</div></OSWindow>)
+    expect(screen.getByRole('dialog', { name: 'profile.txt — メモ帳' })).toBeTruthy()
+  })
+
+  it('開いたときにウィンドウへフォーカスが移る', () => {
+    render(<OSWindow {...baseProps}><div>content</div></OSWindow>)
+    expect(document.activeElement).toBe(screen.getByRole('dialog'))
+  })
+
   it('閉じるボタンで onClose が呼ばれる', async () => {
     const onClose = vi.fn()
     const user = userEvent.setup()
     render(<OSWindow {...baseProps} onClose={onClose}><div>content</div></OSWindow>)
-    await user.click(screen.getByTitle('閉じる'))
+    await user.click(screen.getByRole('button', { name: '閉じる' }))
     expect(onClose).toHaveBeenCalledOnce()
   })
 
@@ -60,7 +70,7 @@ describe('OSWindow', () => {
     const onMinimize = vi.fn()
     const user = userEvent.setup()
     render(<OSWindow {...baseProps} onMinimize={onMinimize}><div>content</div></OSWindow>)
-    await user.click(screen.getByTitle('最小化'))
+    await user.click(screen.getByRole('button', { name: '最小化' }))
     expect(onMinimize).toHaveBeenCalledOnce()
   })
 
@@ -68,8 +78,16 @@ describe('OSWindow', () => {
     const onMaximize = vi.fn()
     const user = userEvent.setup()
     render(<OSWindow {...baseProps} onMaximize={onMaximize}><div>content</div></OSWindow>)
-    await user.click(screen.getByTitle('最大化'))
+    await user.click(screen.getByRole('button', { name: '最大化' }))
     expect(onMaximize).toHaveBeenCalledOnce()
+  })
+
+  it('タイトルバーで矢印キーを押すとウィンドウが移動する（WCAG 2.1.1）', () => {
+    const onMove = vi.fn()
+    render(<OSWindow {...baseProps} onMove={onMove}><div>content</div></OSWindow>)
+    const titlebar = screen.getByLabelText(/矢印キーでウィンドウを移動/)
+    fireEvent.keyDown(titlebar, { key: 'ArrowRight' })
+    expect(onMove).toHaveBeenCalledWith(120, 100)
   })
 
   it('右下ハンドルのドラッグで幅・高さの両方を変更して onResize が呼ばれる', () => {
