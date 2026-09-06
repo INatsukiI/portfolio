@@ -1,15 +1,22 @@
 name: CI
 
 on:
-  push:
+  # main への PR で必須チェックを走らせる（Dependabot PR 含む）。
+  # feature/** ・ fix/** への push 単体では走らない —— マージは必ず PR 経由で、
+  # PR を開いた時点（opened）と以降の push ごと（synchronize）に CI が回る。
+  # push トリガーを併用すると同一ブランチで二重起動し、concurrency の
+  # cancel-in-progress でキャンセルされた方のチェックが branch protection を
+  # ブロックし続けるため、あえて外している。
+  pull_request:
     branches:
-      - 'feature/**'
-      - 'fix/**'
+      - main
+  # PR を開く前のブランチや main を手動で検証したいとき用
+  workflow_dispatch:
 
 permissions: {}
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -26,3 +33,23 @@ jobs:
       - run: npm run check
       - run: npm run test
       - run: npm audit --audit-level=high
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # ブラウザバイナリのダウンロードで時間が伸びるため Lint & Build & Test とは別ジョブにしている
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ failure() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

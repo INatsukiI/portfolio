@@ -55,11 +55,15 @@ git status --short
 
 ## ステップ 4: UI 確認（UI 変更がある場合のみ）
 
-UI に関わる変更がある場合はプレビューで目視確認する：
+UI に関わる変更がある場合は目視確認する（詳細は `.claude/skills/ui-preview`）：
 
+```bash
+npm run dev &                                  # 開発サーバー起動
+npm run screenshot -- tmp/done-check.png       # スクリーンショット取得
 ```
-preview_start → preview_screenshot
-```
+
+取得した画像を Read で開いてレイアウト崩れがないか確認する。
+ウィンドウ開閉・移動・リサイズや Contact フォームなど主要フローに関わる変更なら、あわせて `npm run test:e2e` を通す。
 
 ---
 

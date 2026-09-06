@@ -9,9 +9,11 @@ interface DesktopIconProps {
   onOpen: () => void
   selected: boolean
   compact: boolean
+  /** E2E テスト用の識別子（`data-testid` に設定される） */
+  testId?: string
 }
 
-export function DesktopIcon({ kind, label, onOpen, selected, compact }: DesktopIconProps) {
+export function DesktopIcon({ kind, label, onOpen, selected, compact, testId }: DesktopIconProps) {
   const handleClick = (e: ReactMouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
     onOpen()
@@ -29,6 +31,7 @@ export function DesktopIcon({ kind, label, onOpen, selected, compact }: DesktopI
       role="button"
       tabIndex={0}
       aria-label={label}
+      data-testid={testId}
       onClick={handleClick}
       onDoubleClick={handleClick}
       onKeyDown={handleKeyDown}

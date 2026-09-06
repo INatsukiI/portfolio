@@ -7,8 +7,8 @@ import { OSWindow } from './OSWindow'
 vi.mock('framer-motion', () => ({
   motion: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    div: ({ children, style, className, onPointerDown }: any) => (
-      <div style={style} className={className} onPointerDown={onPointerDown}>
+    div: ({ children, style, className, onPointerDown, 'data-testid': dataTestId }: any) => (
+      <div style={style} className={className} onPointerDown={onPointerDown} data-testid={dataTestId}>
         {children}
       </div>
     ),
@@ -148,6 +148,12 @@ describe('OSWindow', () => {
     const handle = screen.getByTestId('resize-handle-s')
     fireEvent.keyDown(handle, { key: 'ArrowDown' })
     expect(onResize).toHaveBeenCalledWith(400, 320)
+  })
+
+  it('ルート要素とタイトルバーに id ベースの data-testid が付与される', () => {
+    render(<OSWindow {...baseProps}><div>content</div></OSWindow>)
+    expect(screen.getByTestId('window-about')).toBeTruthy()
+    expect(screen.getByTestId('window-titlebar-about')).toBeTruthy()
   })
 
   it('window control ボタンに aria-label が設定される', () => {

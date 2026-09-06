@@ -83,6 +83,12 @@ git diff main...HEAD --stat
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
+**見た目の変更が含まれる場合（レイアウト・色・アニメーション・文言・新規/変更コンポーネント等）:**
+
+1. `npm run dev` を起動し `npm run screenshot -- <出力パス>` で変更後のスクリーンショットを撮る（before/after が示せるなら両方）
+2. `gh pr create` に `--attach '<path>#<alt text>'` を付ける（複数はフラグを繰り返す。`gh` 2.99.0 以上が必要）
+3. 本文の表で before/after を並べたい場合は、投稿後に返る `user-attachments/assets/...` URL で `gh api -X PATCH ...` して本文を編集する（本文の `![](path)` と `--attach` のパスが完全一致していないと自動置換されないため）
+
 実行：
 
 ```bash
@@ -90,6 +96,8 @@ gh pr create --title "<title>" --base <base> --body "$(cat <<'EOF'
 <body>
 EOF
 )"
+# 見た目の変更がある場合は末尾に付ける:
+#   --attach './tmp/after.png#変更後' --attach './tmp/before.png#変更前'
 ```
 
 ## ステップ 6: URL を返す

@@ -239,6 +239,7 @@ export default function OSScene() {
             key={ic.id}
             kind={ic.kind}
             label={ic.label}
+            testId={`desktop-icon-${ic.id}`}
             selected={selectedIcon === ic.id}
             compact={compact}
             onOpen={() => {
@@ -326,6 +327,7 @@ export default function OSScene() {
             <button
               ref={launcherRef}
               aria-label="ランチャーを開く"
+              data-testid="launcher-trigger"
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm tracking-wide transition-all duration-150 flex-shrink-0',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
@@ -426,6 +428,7 @@ export default function OSScene() {
           {windows.map(w => (
             <button
               key={w.id}
+              data-testid={`taskbar-tab-${w.id}`}
               onClick={() => focusWindow(w.id)}
               aria-pressed={w.z === zTop && !w.minimized}
               aria-label={w.title.split('—')[0].trim()}
