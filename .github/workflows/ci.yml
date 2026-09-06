@@ -3,12 +3,15 @@ name: CI
 on:
   # main への PR で必須チェックを走らせる（Dependabot PR 含む）。
   # feature/** ・ fix/** への push 単体では走らない —— マージは必ず PR 経由で、
-  # PR を開いた時点で CI が回る。push トリガーを併用すると同一ブランチで
-  # 二重起動し、concurrency の cancel-in-progress でキャンセルされた方の
-  # チェックが branch protection をブロックし続けるため、あえて外している。
+  # PR を開いた時点（opened）と以降の push ごと（synchronize）に CI が回る。
+  # push トリガーを併用すると同一ブランチで二重起動し、concurrency の
+  # cancel-in-progress でキャンセルされた方のチェックが branch protection を
+  # ブロックし続けるため、あえて外している。
   pull_request:
     branches:
       - main
+  # PR を開く前のブランチや main を手動で検証したいとき用
+  workflow_dispatch:
 
 permissions: {}
 
