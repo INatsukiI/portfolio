@@ -110,7 +110,7 @@ src/
 ├── dependabot.yml     # 依存更新（npm / github-actions）を weekly・groups で束ねて発行
 ├── actions/setup/action.yml  # Node セットアップ + npm ci の composite action（ci.yml / deploy.yml から利用）
 └── workflows/
-    ├── ci.yml          # main への PR ＋ feature/** ・ fix/** への push で Lint & Build & Test
+    ├── ci.yml          # main への pull_request で Lint & Build & Test（マージは必ず PR 経由）
     ├── dependabot-auto-merge.yml  # Dependabot の patch/minor PR に auto-merge を付与
     └── deploy.yml      # main への push で GitHub Pages へデプロイ
 ```
