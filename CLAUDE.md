@@ -60,6 +60,11 @@ npx playwright install chromium
   1. `npm run dev` を起動する
   2. `npm run screenshot -- <出力パス> [URL] [幅x高さ]` でスクリーンショットを撮り、画像を確認する（`.claude/skills/ui-preview` skill も参照）
   3. 主要フローに関わる変更なら `npm run test:e2e` も通す
+- **見た目に変更が入る PR（レイアウト・色・アニメーション・文言・新規/変更コンポーネント等）は、変更後のスクリーンショットまたは操作を示す動画を PR に添付すること。**
+  - `gh pr create` / `gh pr comment` の `--attach` を使う（`gh` 2.99.0 以上が必要）。例: `gh pr create ... --attach './after.png#変更後'`。複数枚はフラグを繰り返す。
+  - before/after が示せる場合は両方添付し、PR 本文の表で並べる。
+  - PR 本文に `![](path)` を書いてその場で URL 置換させたい場合、参照文字列と `--attach` に渡すパスを**完全一致**させる（不一致だと置換されず末尾に追記される）。確実を期すなら本文に画像参照を書かず、投稿後に返る `user-attachments/assets/...` URL で本文を編集する。
+  - `gh` が古く `--attach` が使えない環境では、本文にその旨を明記し `npm run screenshot` の結果を別途共有する。
 - スタック・ディレクトリ構成・コーディング規約が変わったら、このファイル（CLAUDE.md）を都度更新すること。
 - 新しい npm パッケージを追加する前に、既存の依存関係で代替できないか確認すること。
 - 繰り返し使う作業フロー（PR 作成・コンポーネント追加パターンなど）は `.claude/skills/` に skill として追加することを検討する。
