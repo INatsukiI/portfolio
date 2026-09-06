@@ -129,6 +129,18 @@ src/
 - Tailwind クラスは `cn()` 経由で使用する（`src/lib/utils.ts`）
 - レイアウト（flex/grid/padding/gap）は Tailwind クラス、色・border は `OS.*` またはテーマ変数（`text-primary`, `border-border` など）で書き分ける
 
+### アクセシビリティ（デジタル庁デザインシステム / WCAG 2.2 AA 準拠）
+
+- **フォントサイズは 14px（`text-sm`）を下限**とする。本文は 16px（`text-base` / `1rem`）基準。`text-xs`(12px) はバッジ・タグなど非本文の小コンポーネントに限る。`text-[10px]` 等は使わない
+- テキスト色は**半透明ではなく不透明値**で指定し、暗背景で本文 4.5:1・UI/境界 3:1 以上を確保する（`OS.inkSoft` / `--muted-foreground` は調整済み）
+- アニメーションは `@media (prefers-reduced-motion: reduce)`（`src/index.css` にグローバル定義）と `main.tsx` の `<MotionConfig reducedMotion="user">` で抑制される。新規の派手な動き・点滅は追加しない
+- 境界を影・半透明のみで表現しない。強制カラーモード対策として `fc-border` / `fc-border-b` / `fc-border-t` ユーティリティ（`src/index.css`）を境界要素に付ける
+- 見出しは `<h1>`〜を階層的に使う（`SectionHead` は `as="h2"|"h3"` を受け取る）。ランドマーク（`header`/`nav`/`main`）を維持する
+- リンクは色以外の手がかり（下線）でも識別できるようにする。クリックできる見た目の要素は実際に操作可能にする（`<button>` / `<a>`）
+- フォームは縦スタック＋`<label htmlFor>`。`outline-none` を使う場合は必ず `focus-visible:ring-*` の代替を付ける
+- 操作ターゲットは実効 24×24px 以上（ヒットエリアで担保してよい）
+- 和文フォントは `--font-sans` / `--font-mono` に Noto Sans JP を含めてある。日本語テキストに `font-mono` の広い字間や `italic` を当てない
+
 ### アイコン
 
 - `lucide-react` から直接インポートする（shadcn/ui も内部で lucide-react を使用しているため、これが正しい方法）

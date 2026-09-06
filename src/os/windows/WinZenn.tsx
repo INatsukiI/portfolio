@@ -72,22 +72,22 @@ export function WinZenn() {
   }, [refreshKey])
 
   return (
-    <div className="font-sans text-sm flex flex-col gap-3">
+    <div className="font-sans flex flex-col gap-3">
       {/* ヘッダー */}
-      <div className="flex items-center justify-between">
-        <SectionHead>
+      <div className="flex items-center justify-between gap-2">
+        <SectionHead as="h3">
           <span className="flex items-center gap-2">
-            <Rss size={12} style={{ color: OS.accent }} />
+            <Rss size={14} style={{ color: OS.accent }} aria-hidden="true" />
             articles/
           </span>
         </SectionHead>
         <button
           onClick={refresh}
           disabled={loading || refreshing}
-          className="flex items-center gap-1 font-mono text-[10px] tracking-widest transition-opacity hover:opacity-70 disabled:opacity-30"
+          className="flex items-center gap-1 font-mono text-sm tracking-wide transition-opacity hover:opacity-70 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-1"
           style={{ color: OS.inkSoft }}
         >
-          <RefreshCw size={10} className={loading || refreshing ? 'animate-spin' : ''} />
+          <RefreshCw size={13} className={loading || refreshing ? 'animate-spin' : ''} aria-hidden="true" />
           REFRESH
         </button>
       </div>
@@ -114,22 +114,22 @@ export function WinZenn() {
           className="rounded-lg p-5 flex flex-col items-center gap-3 text-center"
           style={{ background: OS.chromeHi, border: `1px solid ${OS.bodyEdge}` }}
         >
-          <span className="font-mono text-[10px] tracking-widest" style={{ color: OS.inkSoft }}>
+          <span className="font-mono text-sm tracking-wide" style={{ color: OS.inkSoft }}>
             // FETCH FAILED — CORS または接続エラー
           </span>
           <a
             href={`https://zenn.dev/${ZENN_USER}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 font-mono text-xs transition-opacity hover:opacity-70"
+            className="flex items-center gap-1.5 font-mono text-sm underline underline-offset-2 transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
             style={{ color: OS.accent }}
           >
-            <ExternalLink size={11} />
+            <ExternalLink size={13} aria-hidden="true" />
             zenn.dev/{ZENN_USER} で読む
           </a>
           <button
             onClick={refresh}
-            className="font-mono text-[10px] tracking-widest transition-opacity hover:opacity-70"
+            className="font-mono text-sm tracking-wide underline underline-offset-2 transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-1"
             style={{ color: OS.inkSoft }}
           >
             再試行
@@ -156,7 +156,7 @@ export function WinZenn() {
             style={{ opacity: refreshing ? 0.4 : 1 }}
           >
             {articles.length === 0 ? (
-              <p className="font-mono text-[11px]" style={{ color: OS.inkSoft }}>
+              <p className="font-mono text-sm" style={{ color: OS.inkSoft }}>
                 // 記事が見つかりませんでした
               </p>
             ) : (
@@ -166,17 +166,17 @@ export function WinZenn() {
                   href={`https://zenn.dev${a.path}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block rounded-lg p-3.5 no-underline transition-colors hover:bg-accent/10"
+                  className="fc-border group block rounded-lg p-3.5 no-underline transition-colors hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   style={{ border: `1px solid ${OS.bodyEdge}` }}
                 >
                   <div className="flex items-start gap-3">
                     {/* emoji */}
-                    <span className="text-xl leading-none mt-0.5 flex-shrink-0">{a.emoji}</span>
+                    <span className="text-xl leading-none mt-0.5 flex-shrink-0" aria-hidden="true">{a.emoji}</span>
 
                     <div className="flex-1 min-w-0">
                       {/* タイトル */}
                       <p
-                        className="text-xs font-bold leading-snug mb-1.5 truncate"
+                        className="text-sm font-bold leading-snug mb-1.5 line-clamp-2 group-hover:underline underline-offset-2"
                         style={{ color: OS.white }}
                       >
                         {a.title}
@@ -186,28 +186,28 @@ export function WinZenn() {
                       <div className="flex items-center gap-3">
                         {/* 種別バッジ */}
                         <span
-                          className="font-mono text-[9px] tracking-widest px-1.5 py-0.5 rounded"
+                          className="font-mono text-xs tracking-wide px-1.5 py-0.5 rounded"
                           style={{
                             color:       TYPE_COLOR[a.article_type],
                             border:      `1px solid ${TYPE_COLOR[a.article_type]}`,
-                            background:  `${TYPE_COLOR[a.article_type]}11`,
+                            background:  `${TYPE_COLOR[a.article_type]}22`,
                           }}
                         >
                           {a.article_type.toUpperCase()}
                         </span>
 
                         {/* 日付 */}
-                        <span className="font-mono text-[10px]" style={{ color: OS.inkSoft }}>
+                        <span className="font-mono text-sm" style={{ color: OS.inkSoft }}>
                           {formatDate(a.published_at)}
                         </span>
 
                         {/* いいね */}
                         <span
-                          className="flex items-center gap-0.5 font-mono text-[10px] ml-auto"
+                          className="flex items-center gap-0.5 font-mono text-sm ml-auto"
                           style={{ color: OS.inkSoft }}
                         >
-                          <Heart size={9} />
-                          {a.liked_count}
+                          <Heart size={12} aria-hidden="true" />
+                          <span aria-label={`いいね ${a.liked_count}`}>{a.liked_count}</span>
                         </span>
                       </div>
                     </div>

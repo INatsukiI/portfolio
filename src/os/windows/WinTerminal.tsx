@@ -229,14 +229,14 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
   return (
     <div
       ref={containerRef}
-      className="h-full overflow-hidden p-3 font-mono text-xs"
+      className="h-full overflow-auto p-3 font-mono text-sm"
       style={{ background: 'rgba(4,10,20,0.95)', color: OS.chromeFg }}
       onClick={() => inputRef.current?.focus()}
     >
       {lines.map((line, i) => (
         <div
           key={i}
-          className="leading-5 whitespace-pre-wrap break-all"
+          className="leading-6 whitespace-pre-wrap break-all"
           style={{
             color: line.type === 'input' ? OS.accent
                  : line.type === 'error' ? OS.red
@@ -246,7 +246,7 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
           {line.text}
         </div>
       ))}
-      <div className="leading-5 flex items-center relative">
+      <div className="leading-6 flex items-center relative">
         <span style={{ color: OS.accent, whiteSpace: 'nowrap' }}>{PROMPT}&nbsp;</span>
         <span style={{ color: OS.chromeFg, whiteSpace: 'pre' }}>{input.slice(0, cursorPos)}</span>
         <span

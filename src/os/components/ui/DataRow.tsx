@@ -8,9 +8,9 @@ interface DataRowProps {
 
 export function DataRow({ label, val, mono }: DataRowProps) {
   return (
-    <div className="flex justify-between border-b border-border py-1 text-sm">
-      <span className="text-muted-foreground font-mono text-[10px] tracking-widest uppercase">{label}</span>
-      <span className={cn('text-foreground', mono && 'font-mono text-xs')}>{val}</span>
+    <div className="flex justify-between gap-3 border-b border-border py-1.5 text-sm">
+      <span className="text-muted-foreground font-mono text-sm tracking-wide uppercase">{label}</span>
+      <span className={cn('text-foreground text-right', mono && 'font-mono')}>{val}</span>
     </div>
   )
 }

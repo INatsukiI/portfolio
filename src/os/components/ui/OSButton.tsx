@@ -15,7 +15,8 @@ export function OSButton({ children, primary, onClick, disabled }: OSButtonProps
       size="sm"
       onClick={onClick}
       disabled={disabled}
-      className="font-mono text-xs tracking-widest"
+      // 強制カラーモードで塗り/アウトラインの区別が消えても形状が分かるよう実線を担保
+      className="font-mono text-sm tracking-wide fc-border"
     >
       {children}
     </Button>
