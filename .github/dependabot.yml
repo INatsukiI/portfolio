@@ -4,8 +4,33 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      # react / react-dom はバージョン完全一致が必須なので常に 1 つの PR にまとめる
+      # （#43 で react だけ上がって react-dom が取り残されテストが全滅した再発防止）
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      # 開発依存の minor / patch は 1 PR に集約（major は個別 PR のまま）
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      # 本番依存の minor / patch も 1 PR に集約
+      prod-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"

@@ -93,11 +93,17 @@ npx playwright install chromium
    - セキュリティ
    - 本ファイルのコーディング規約・命名規則・テストに関するルールへの準拠
    - アクセシビリティ（該当する場合）
-   - CI が実際に通っているか（ブランチ名が `ci.yml` のトリガー条件に合わずチェックが一度も走っていない、なども不備として扱う）
-3. 問題がなければ `gh pr merge <N> --merge` でそのまま main へマージする（人の承認は待たない）。ただし branch protection の必須チェック「Lint & Build & Test」は `feature/**` / `fix/**` ブランチでしか走らないため、それ以外（`dependabot/**` 等）の PR は永久に `BLOCKED` のままになる。その場合はローカルでブランチをチェックアウトし `npm ci && npm run check && npm run test` で代替確認したうえで `gh pr merge <N> --merge --admin` を使う。
+   - CI が実際に通っているか
+3. 問題がなければ `gh pr merge <N> --merge` でそのまま main へマージする（人の承認は待たない）。必須チェック「Lint & Build & Test」は `pull_request`（対象 main）でも走るので、通常は `--admin` 不要。
 4. 問題があれば、そのブランチをチェックアウト済みの子ワークツリー／セッションが存在すればそこへ修正を依頼し、存在しない・応答がない場合は新しい worktree を自分で作成して直接修正する。修正後は `npm run check` と `npm run test` を通してから push し、2 に戻って再レビューする。
 5. 「修正 → 再レビュー」のループは **最大 3 回まで**。3 回試しても解決しない場合は自動マージを諦め、PR にコメントで指摘内容と試行結果を残し、ユーザーに報告して判断を仰ぐ。
 6. 作業用に作った一時 worktree は完了後に必ず `git worktree remove` で片付ける。他セッションが使用中の worktree には手を出さない。
+
+### Dependabot PR の扱い
+
+- **patch / minor 更新**（グループ PR 含む）は `dependabot-auto-merge.yml` が GitHub の auto-merge を有効化し、`ci.yml`（`pull_request`）が緑になった時点で自動マージされる。**手動で触らない**。
+- **major 更新・CI 失敗・グループ内に major を含む PR・長期スタック**は自動マージに載らない。これらの対応は `/review-dependabot` スキルに従う。
+- `.github/dependabot.yml` の `groups` で react 系（react / react-dom / @types/react）は常に 1 PR に束ねている（版ズレによるテスト全滅の再発防止）。
 
 ---
 
@@ -130,9 +136,11 @@ scripts/screenshot.mjs   # 目視確認用スクリーンショット取得ス�
 playwright.config.ts     # Playwright 設定（testDir: e2e / webServer: npm run dev / Chromium のみ）
 
 .github/
+├── dependabot.yml     # 依存更新（npm / github-actions）を weekly・groups で束ねて発行
 ├── actions/setup/action.yml  # Node セットアップ + npm ci の composite action（ci.yml / deploy.yml から利用）
 └── workflows/
-    ├── ci.yml          # feature/** ・ fix/** ブランチの Lint & Build & Test（+ 独立ジョブで E2E）
+    ├── ci.yml          # main への pull_request で Lint & Build & Test（+ 独立ジョブで E2E）。マージは必ず PR 経由
+    ├── dependabot-auto-merge.yml  # Dependabot の patch/minor PR に auto-merge を付与
     └── deploy.yml      # main への push で GitHub Pages へデプロイ
 ```
 
