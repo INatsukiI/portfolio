@@ -26,7 +26,7 @@ export interface WindowDefault {
 }
 
 export const WIN_DEFAULTS: Record<string, WindowDefault> = {
-  readme:   { title: 'welcome.txt — メモ帳',    icon: 'readme',   x: 280, y: 60,  w: 520, h: 560 },
+  readme:   { title: 'welcome.txt — メモ帳',    icon: 'readme',   x: 240, y: 60,  w: 640, h: 560 },
   about:    { title: 'profile.txt — メモ帳',     icon: 'about',    x: 120, y: 100, w: 520, h: 360 },
   skills:   { title: 'skills.app',              icon: 'skills',   x: 200, y: 80,  w: 540, h: 480 },
   projects: { title: 'projects — フォルダ',     icon: 'projects', x: 160, y: 110, w: 600, h: 440 },
