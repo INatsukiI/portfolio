@@ -24,6 +24,7 @@
 | スタイリング | Tailwind CSS v4（`@tailwindcss/vite`）+ インラインスタイル併用 |
 | アイコン | lucide-react |
 | フォント | JetBrains Mono / Space Grotesk（Google Fonts） |
+| Lint | Oxlint（Rust 製。`.oxlintrc.json` で設定） |
 | テスト（単体） | Vitest + @testing-library/react |
 | テスト（E2E）・UI目視確認 | Playwright（`@playwright/test`、Chromium のみ） |
 | デプロイ | GitHub Pages（`main` push で `deploy.yml` が自動デプロイ） |
@@ -35,7 +36,7 @@
 ```bash
 npm run dev          # 開発サーバー起動 → http://localhost:5173
 npm run build        # 本番ビルド（型エラーも検出される）
-npm run lint         # ESLint チェック
+npm run lint         # Oxlint チェック
 npm run check        # lint + build を一括実行（修正後は必ずこれを通す）
 npm run preview      # ビルド成果物をローカルで確認
 npm run test         # 単体テスト一括実行（vitest run）

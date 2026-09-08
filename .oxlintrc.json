@@ -1,0 +1,29 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "react", "oxc"],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "browser": true,
+    "builtin": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  },
+  "ignorePatterns": ["dist", ".claude"],
+  "overrides": [
+    {
+      "files": [
+        "e2e/**/*.{ts,tsx}",
+        "playwright.config.ts",
+        "*.config.{js,ts,mjs}",
+        "scripts/**/*.{js,mjs}"
+      ],
+      "env": { "node": true, "browser": true },
+      "rules": { "react/only-export-components": "off" }
+    }
+  ]
+}
