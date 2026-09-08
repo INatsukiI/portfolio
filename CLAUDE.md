@@ -181,6 +181,7 @@ playwright.config.ts     # Playwright 設定（testDir: e2e / webServer: npm run
 - リンクは色以外の手がかり（下線）でも識別できるようにする。クリックできる見た目の要素は実際に操作可能にする（`<button>` / `<a>`）
 - フォームは縦スタック＋`<label htmlFor>`。`outline-none` を使う場合は必ず `focus-visible:ring-*` の代替を付ける
 - 操作ターゲットは実効 24×24px 以上（ヒットエリアで担保してよい）
+- **拡大表示・リフロー（WCAG 1.4.10 / 1.4.4）**: `#root` に `overflow:hidden` や `100vw` を付けない。狭幅・高倍率拡大時（`OSScene` の `compact = cw < 720`）はデスクトップのウィンドウ配置をやめ、`<main>` 内にウィンドウを縦 1 カラムで積んでページ全体を縦スクロールで到達可能にする（トップバー／タスクバーは `sticky`）。ウィンドウ内コンテンツは高さを固定せず `overflow-visible` にしてページスクロールへ委ね、2 次元スクロールを作らない（ターミナル等 `plain` は例外的に固定高＋内部スクロール）。回帰は `e2e/reflow.spec.ts` で担保
 - 和文フォントは `--font-sans` / `--font-mono` に Noto Sans JP を含めてある。日本語テキストに `font-mono` の広い字間や `italic` を当てない
 
 ### アイコン

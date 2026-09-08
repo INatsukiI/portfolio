@@ -139,10 +139,11 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* 拡大表示・リフロー対応（WCAG 1.4.10 / 1.4.4）:
+     高さは最低でもビューポート分を確保しつつ、コンテンツが増えたら縦に伸びる。
+     100vw やルートの overflow:hidden は使わない（横スクロール・内容の到達不能を招くため）。 */
   #root {
-    width: 100vw;
-    height: 100svh;
-    overflow: hidden;
+    min-height: 100svh;
   }
 }
 
