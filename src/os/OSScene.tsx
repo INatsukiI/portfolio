@@ -392,7 +392,22 @@ export default function OSScene() {
                 <input
                   value={menuSearch}
                   onChange={e => setMenuSearch(e.target.value)}
-                  onKeyDown={e => e.stopPropagation()}
+                  onKeyDown={e => {
+                    // 上下キーはメニュー項目へフォーカスを移す（Radix は input 由来の
+                    // 矢印キーを無視するため手動でフォーカスを移動させる）
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                      const menu = e.currentTarget.closest('[role="menu"]')
+                      const items = menu?.querySelectorAll<HTMLElement>('[role="menuitem"]')
+                      const target = e.key === 'ArrowDown' ? items?.[0] : items?.[items.length - 1]
+                      if (target) {
+                        e.preventDefault()
+                        target.focus()
+                      }
+                      return
+                    }
+                    // 文字入力は検索欄に留める（Radix のタイプアヘッドに奪われないように）
+                    e.stopPropagation()
+                  }}
                   placeholder="search..."
                   aria-label="アプリを検索"
                   className="w-full rounded bg-transparent px-1 py-0.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"

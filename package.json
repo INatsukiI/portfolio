@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "fetch:zenn": "node scripts/fetch-zenn.mjs",
+    "prebuild": "node scripts/fetch-zenn.mjs",
     "build": "vite build",
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",

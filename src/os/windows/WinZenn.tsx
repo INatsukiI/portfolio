@@ -49,9 +49,9 @@ export function WinZenn() {
   useEffect(() => {
     let cancelled = false
     // setState は必ず非同期コールバック内で呼ぶ（react-hooks/set-state-in-effect 対応）
-    const API = `https://zenn.dev/api/articles?username=${ZENN_USER}&order=latest&count=20`
-    // 素性の分からない第三者 CORS プロキシは信頼しない。直接 fetch のみ試行し、
-    // ブロックされた場合はエラー UI（Zenn への外部リンク）にフォールバックする。
+    // Zenn API は CORS ヘッダを返さずブラウザから直接叩けないため、
+    // ビルド時に scripts/fetch-zenn.mjs が取得した同一オリジンのスナップショットを読む。
+    const API = `${import.meta.env.BASE_URL}zenn-articles.json`
     fetch(API)
       .then(r => { if (!r.ok) throw new Error(`${r.status}`); return r.json() })
       .then((data: { articles: ZennArticle[] }) => {
@@ -115,7 +115,7 @@ export function WinZenn() {
           style={{ background: OS.chromeHi, border: `1px solid ${OS.bodyEdge}` }}
         >
           <span className="font-mono text-sm tracking-wide" style={{ color: OS.inkSoft }}>
-            // FETCH FAILED — CORS または接続エラー
+            // FETCH FAILED — 記事を読み込めませんでした
           </span>
           <a
             href={`https://zenn.dev/${ZENN_USER}`}
