@@ -16,7 +16,7 @@
 
 | 種別 | 内容 |
 |---|---|
-| 言語 | TypeScript + JSX（TSX） |
+| 言語 | TypeScript 7（Go 製ネイティブコンパイラ）+ JSX（TSX） |
 | UI フレームワーク | React 19 |
 | アニメーション | Framer Motion |
 | UI コンポーネント | shadcn/ui（Radix UI ベース） |
@@ -35,9 +35,10 @@
 
 ```bash
 npm run dev          # 開発サーバー起動 → http://localhost:5173
-npm run build        # 本番ビルド（型エラーも検出される）
+npm run build        # 本番ビルド（Vite / esbuild。型チェックは別途 typecheck で）
 npm run lint         # Oxlint チェック
-npm run check        # lint + build を一括実行（修正後は必ずこれを通す）
+npm run typecheck    # tsc --noEmit（TS7）で型チェック
+npm run check        # lint + typecheck + build を一括実行（修正後は必ずこれを通す）
 npm run preview      # ビルド成果物をローカルで確認
 npm run test         # 単体テスト一括実行（vitest run）
 npm run test:watch   # 単体テストウォッチモード（開発中）
