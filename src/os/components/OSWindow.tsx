@@ -36,12 +36,13 @@ export function OSWindow({ id, title, x, y, w, h, z, compact, maximized, onClose
   const panelRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
 
-  // ウィンドウを開いたらフォーカスをそのウィンドウへ移す（WCAG 2.4.3 / ダイアログ相当）
+  // マウント時のみ実行: ウィンドウを開いたらフォーカスをそのウィンドウへ移す（WCAG 2.4.3 / ダイアログ相当）。
+  // 縦 1 カラム表示では画面外に積まれることがあるので可視域へスクロールする。
+  // compact は初回マウント時の値だけを見れば十分なため依存配列に含めない。
+  const compactOnMount = useRef(compact)
   useEffect(() => {
     panelRef.current?.focus({ preventScroll: true })
-    // 縦 1 カラム表示では新しいウィンドウが画面外に積まれることがあるので、可視域へスクロールする
-    if (compact) panelRef.current?.scrollIntoView?.({ block: 'start' })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (compactOnMount.current) panelRef.current?.scrollIntoView?.({ block: 'start' })
   }, [])
 
   const startDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
