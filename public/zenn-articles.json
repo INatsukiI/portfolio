@@ -1,0 +1,65 @@
+{
+  "articles": [
+    {
+      "id": 361326,
+      "title": "【DDD】基本概念と実装例の紹介",
+      "slug": "efafa67e3a9f19",
+      "emoji": "🐙",
+      "article_type": "tech",
+      "liked_count": 4,
+      "published_at": "2025-03-17T09:07:52.165+09:00",
+      "path": "/ooooomu/articles/efafa67e3a9f19"
+    },
+    {
+      "id": 362705,
+      "title": "Spring IntegrationでTCP通信(Server)",
+      "slug": "d77230e9e14dfc",
+      "emoji": "🐥",
+      "article_type": "tech",
+      "liked_count": 2,
+      "published_at": "2025-01-28T09:21:24.184+09:00",
+      "path": "/ooooomu/articles/d77230e9e14dfc"
+    },
+    {
+      "id": 349857,
+      "title": "【Spring Boot(kotlin)】バリデーションを自作する",
+      "slug": "6d25ae15cc4a56",
+      "emoji": "🐤",
+      "article_type": "tech",
+      "liked_count": 1,
+      "published_at": "2024-12-23T09:27:00.349+09:00",
+      "path": "/ooooomu/articles/6d25ae15cc4a56"
+    },
+    {
+      "id": 331455,
+      "title": "時刻フォーマット hhの罠",
+      "slug": "62c3e682e466bc",
+      "emoji": "🙆",
+      "article_type": "tech",
+      "liked_count": 0,
+      "published_at": "2024-11-12T07:00:01.315+09:00",
+      "path": "/ooooomu/articles/62c3e682e466bc"
+    },
+    {
+      "id": 264583,
+      "title": "Spring Boot + ThymeleafでCSVファイルをダウンロードする",
+      "slug": "f746649b30813d",
+      "emoji": "📁",
+      "article_type": "tech",
+      "liked_count": 0,
+      "published_at": "2024-04-19T15:11:00.000+09:00",
+      "path": "/ooooomu/articles/f746649b30813d"
+    },
+    {
+      "id": 257683,
+      "title": "KotlinでCSVファイル読み込み・書き込み📝",
+      "slug": "c108285733f0f6",
+      "emoji": "🕌",
+      "article_type": "tech",
+      "liked_count": 3,
+      "published_at": "2024-03-28T12:30:27.131+09:00",
+      "path": "/ooooomu/articles/c108285733f0f6"
+    }
+  ],
+  "fetchedAt": "2026-09-08T14:05:30.858Z"
+}

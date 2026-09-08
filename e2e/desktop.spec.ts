@@ -33,6 +33,19 @@ test('ランチャーから terminal ウィンドウを開ける', async ({ page
   await expect(win).toBeHidden()
 })
 
+test('ランチャーの検索欄から下キーでメニュー項目へフォーカスを移せる', async ({ page }) => {
+  await page.getByTestId('launcher-trigger').click()
+  const search = page.getByLabel('アプリを検索')
+  await search.fill('term')
+  await search.press('ArrowDown')
+
+  const item = page.getByRole('menuitem', { name: 'terminal.app' })
+  await expect(item).toBeFocused()
+
+  await page.keyboard.press('Enter')
+  await expect(page.getByTestId('window-terminal')).toBeVisible()
+})
+
 test('同じアイコンを再度開いても最前面に復帰するだけで重複しない', async ({ page }) => {
   await openWindowFromIcon(page, 'about')
   await openWindowFromIcon(page, 'about')

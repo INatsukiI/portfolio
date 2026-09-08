@@ -138,6 +138,8 @@ src/
 
 e2e/                     # Playwright E2E テスト（*.spec.ts）＋ helpers.ts
 scripts/screenshot.mjs   # 目視確認用スクリーンショット取得スクリプト
+scripts/fetch-zenn.mjs   # Zenn 記事をビルド時に取得し public/zenn-articles.json に保存（prebuild で自動実行）
+public/zenn-articles.json # Zenn 記事スナップショット（WinZenn が同一オリジンで読む。Zenn API は CORS 非対応のため直接 fetch 不可）
 playwright.config.ts     # Playwright 設定（testDir: e2e / webServer: npm run dev / Chromium のみ）
 
 .github/
