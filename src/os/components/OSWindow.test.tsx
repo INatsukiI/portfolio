@@ -127,6 +127,23 @@ describe('OSWindow', () => {
     expect(screen.queryByTestId('resize-handle-se')).toBeNull()
   })
 
+  it('compact のとき最大化ボタンは表示されない（縦 1 カラム表示では無意味なため）', () => {
+    render(<OSWindow {...baseProps} compact={true}><div>content</div></OSWindow>)
+    expect(screen.queryByRole('button', { name: '最大化' })).toBeNull()
+    // 閉じる・最小化は残る
+    expect(screen.getByRole('button', { name: '閉じる' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '最小化' })).toBeTruthy()
+  })
+
+  it('compact のときルート要素は通常フロー（relative）に積まれ、絶対配置の px 座標を使わない', () => {
+    render(<OSWindow {...baseProps} compact={true}><div>content</div></OSWindow>)
+    const root = screen.getByTestId('window-about')
+    expect(root.style.position).toBe('relative')
+    expect(root.style.width).toBe('100%')
+    expect(root.style.left).toBe('')
+    expect(root.style.top).toBe('')
+  })
+
   it('3つのリサイズハンドルすべてに aria-label が付与されている', () => {
     render(<OSWindow {...baseProps}><div>content</div></OSWindow>)
     expect(screen.getByTestId('resize-handle-e').getAttribute('aria-label')).toBe('幅を変更')

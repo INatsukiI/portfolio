@@ -39,6 +39,8 @@ const prefersReducedMotion = () =>
 export default function OSScene() {
   const screenRef = useRef<HTMLDivElement>(null)
   const { w: cw, h: ch } = useContainerSize(screenRef)
+  // 狭幅・拡大表示時は「縦 1 カラムのドキュメント表示」へ切り替える（WCAG 1.4.10 Reflow）。
+  // ウィンドウはドラッグ配置をやめて上下に積み、ページ全体を縦スクロールで到達可能にする。
   const compact = cw < 720
   // window.innerWidth は同期で取れるので lazy initializer で中央 x を計算
   const [windows, setWindows] = useState<WindowState[]>(() => {
@@ -191,14 +193,20 @@ export default function OSScene() {
     <div
       ref={screenRef}
       onClick={(e) => { if (e.target === screenRef.current) setSelectedIcon(null) }}
-      className="relative w-full h-full overflow-hidden select-none"
+      className={cn(
+        'relative w-full select-none',
+        compact ? 'min-h-svh' : 'h-svh overflow-hidden',
+      )}
       style={DESKTOP_STYLE}
     >
       <a href="#os-main" className="skip-link">メインコンテンツへスキップ</a>
 
       {/* Top bar */}
       <header
-        className="fc-border-b absolute top-0 left-0 right-0 flex items-center px-4 z-[100]"
+        className={cn(
+          'fc-border-b flex items-center px-4 z-[100] left-0 right-0',
+          compact ? 'sticky top-0' : 'absolute top-0',
+        )}
         style={{
           height: compact ? 36 : 40,
           background: 'rgba(6,14,28,0.8)',
@@ -229,9 +237,9 @@ export default function OSScene() {
       {/* Desktop icons */}
       <nav
         aria-label="アプリ一覧"
-        className={cn('absolute z-[1]', compact
-          ? 'top-10 left-0 right-0 p-2 grid grid-cols-3 gap-1'
-          : 'top-12 left-3 flex flex-col gap-1'
+        className={cn('z-[1]', compact
+          ? 'relative p-2 grid grid-cols-3 gap-1'
+          : 'absolute top-12 left-3 flex flex-col gap-1'
         )}
       >
         {DESKTOP_ICONS.filter(ic => !ic.launchOnly).map(ic => (
@@ -289,7 +297,12 @@ export default function OSScene() {
       )}
 
       {/* Windows */}
-      <main id="os-main" aria-label="ウィンドウ" tabIndex={-1} className="outline-none">
+      <main
+        id="os-main"
+        aria-label="ウィンドウ"
+        tabIndex={-1}
+        className={cn('outline-none', compact && 'flex flex-col gap-3 px-2 pb-4')}
+      >
         <AnimatePresence>
           {windows.filter(w => !w.minimized).map(w => (
             <OSWindow
@@ -313,7 +326,10 @@ export default function OSScene() {
       {/* Bottom taskbar */}
       <nav
         aria-label="タスクバー"
-        className="fc-border-t absolute bottom-0 left-0 right-0 flex items-center gap-2 px-3 z-[100] overflow-visible"
+        className={cn(
+          'fc-border-t flex items-center gap-2 px-3 z-[100] left-0 right-0 overflow-visible',
+          compact ? 'sticky bottom-0' : 'absolute bottom-0',
+        )}
         style={{
           height: compact ? 48 : 44,
           background: 'rgba(6,14,28,0.85)',
@@ -462,7 +478,7 @@ export default function OSScene() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="absolute inset-0 z-[999] flex flex-col items-center justify-center gap-6"
+            className="fixed inset-0 z-[999] flex flex-col items-center justify-center gap-6"
             style={{ background: '#050810' }}
           >
             <motion.div

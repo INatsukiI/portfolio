@@ -39,6 +39,9 @@ export function OSWindow({ id, title, x, y, w, h, z, compact, maximized, onClose
   // ウィンドウを開いたらフォーカスをそのウィンドウへ移す（WCAG 2.4.3 / ダイアログ相当）
   useEffect(() => {
     panelRef.current?.focus({ preventScroll: true })
+    // 縦 1 カラム表示では新しいウィンドウが画面外に積まれることがあるので、可視域へスクロールする
+    if (compact) panelRef.current?.scrollIntoView?.({ block: 'start' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const startDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -110,12 +113,16 @@ export function OSWindow({ id, title, x, y, w, h, z, compact, maximized, onClose
     onResize(w + dw, h + dh)
   }
 
-  const positionStyle: CSSProperties = (compact || maximized) ? {
+  // compact（縦 1 カラム）: 通常フローに relative で積む。高さはコンテンツなり → ページ全体が縦スクロール。
+  // maximized（デスクトップのみ）: 画面いっぱい。
+  // 通常: ドラッグ位置に絶対配置。
+  const positionStyle: CSSProperties = compact ? {
+    position: 'relative',
+    width: '100%',
+    scrollMarginTop: 44,
+  } : maximized ? {
     position: 'absolute',
-    left: compact ? '2%' : 0,
-    right: compact ? '2%' : 0,
-    top: 40,
-    bottom: compact ? 52 : 44,
+    left: 0, right: 0, top: 40, bottom: 44,
     width: 'auto',
   } : {
     position: 'absolute',
@@ -188,17 +195,20 @@ export function OSWindow({ id, title, x, y, w, h, z, compact, maximized, onClose
               <Minus size={8} strokeWidth={3} color="#1a1200" aria-hidden="true" />
             </span>
           </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); onMaximize() }}
-            onPointerDown={(e) => e.stopPropagation()}
-            className="grid place-items-center w-6 h-6 rounded-md flex-shrink-0 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            title={maximized ? '元のサイズに戻す' : '最大化'}
-            aria-label={maximized ? '元のサイズに戻す' : '最大化'}
-          >
-            <span className="grid place-items-center w-3 h-3 rounded-full" style={{ background: '#28c840' }}>
-              <Square size={7} strokeWidth={3} color="#04160a" aria-hidden="true" />
-            </span>
-          </button>
+          {/* 縦 1 カラム表示では最大化の概念がないためボタンを出さない */}
+          {compact ? null : (
+            <button
+              onClick={(e) => { e.stopPropagation(); onMaximize() }}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="grid place-items-center w-6 h-6 rounded-md flex-shrink-0 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              title={maximized ? '元のサイズに戻す' : '最大化'}
+              aria-label={maximized ? '元のサイズに戻す' : '最大化'}
+            >
+              <span className="grid place-items-center w-3 h-3 rounded-full" style={{ background: '#28c840' }}>
+                <Square size={7} strokeWidth={3} color="#04160a" aria-hidden="true" />
+              </span>
+            </button>
+          )}
 
           {/* Title — absolutely centered so traffic-light buttons don't offset it */}
           <h2
@@ -213,14 +223,21 @@ export function OSWindow({ id, title, x, y, w, h, z, compact, maximized, onClose
           </h2>
         </div>
 
-        {/* Content */}
+        {/* Content
+            compact + 通常コンテンツ: overflow を切らずページ全体のスクロールに委ねる（2 次元スクロール回避）。
+            compact + plain（ターミナル等）: 自前スクロールが必要なので固定高を与える。 */}
         <div
-          className={cn('flex-1 min-h-0', plain ? 'overflow-hidden' : 'overflow-auto p-5')}
+          className={cn(
+            'flex-1 min-h-0',
+            plain ? 'overflow-hidden' : 'overflow-auto p-5',
+            compact && !plain && 'overflow-visible',
+          )}
           style={{
             fontSize: '1rem',
             lineHeight: 1.75,
             color: '#c8d8e8',
             fontFamily: "var(--font-sans)",
+            ...(compact && plain ? { height: '70svh' } : null),
           }}
         >
           {children}
