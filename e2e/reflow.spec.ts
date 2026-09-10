@@ -56,4 +56,24 @@ test.describe('狭幅・拡大表示（Reflow）', () => {
     await expect(page.getByTestId('launcher-trigger')).toBeInViewport()
     await expect(page.getByRole('banner')).toBeInViewport()
   })
+
+  test('下方スクロール時に「トップへ戻る」ボタンが出て、押すと最上部へ戻る', async ({ page }) => {
+    await page.goto('/portfolio/')
+    await expect(page.getByText('LOADING KERNEL...')).toBeHidden({ timeout: 15_000 })
+
+    const btn = page.getByTestId('scroll-to-top')
+    // 最上部では非表示
+    await expect(btn).toHaveCount(0)
+
+    await page.getByTestId('desktop-icon-career').click()
+    await page.getByTestId('desktop-icon-projects').click()
+
+    await page.mouse.wheel(0, 2000)
+    await expect(btn).toBeVisible()
+    await expect(btn).toBeInViewport()
+
+    await btn.click()
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10)
+    await expect(btn).toHaveCount(0)
+  })
 })
