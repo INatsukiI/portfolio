@@ -9,7 +9,8 @@ on:
       - '**.md'
   # 毎週月曜 06:00 JST。ビルド時に Zenn 記事スナップショットを取り直すため定期再デプロイする
   schedule:
-    - cron: '0 21 * * 0'
+    - cron: '0 6 * * 1'
+      timezone: 'Asia/Tokyo'
   workflow_dispatch:
 
 permissions: {}
