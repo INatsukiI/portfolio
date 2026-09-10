@@ -8,6 +8,8 @@ vi.mock('framer-motion', () => ({
   motion: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     div: ({ children, ...rest }: any) => <div {...rest}>{children}</div>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    button: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   AnimatePresence: ({ children }: any) => <>{children}</>,

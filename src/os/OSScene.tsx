@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { DropdownMenu } from 'radix-ui'
+import { ArrowUp } from 'lucide-react'
 import { PROFILE } from '../profile'
 import { OSIcon } from './icons'
 import { useContainerSize, currentClock } from './hooks'
@@ -55,6 +56,10 @@ export default function OSScene() {
   const [clock, setClock] = useState(currentClock())
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuSearch, setMenuSearch] = useState('')
+  // compact（縦積み）表示で下方へスクロールしたとき「トップへ戻る」ボタンを出す
+  const [showScrollTop, setShowScrollTop] = useState(
+    () => typeof window !== 'undefined' && window.scrollY > 240,
+  )
 
   // ウィンドウを開いた操作要素を記録し、閉じたらそこへフォーカスを戻す（WCAG 2.4.3）
   const triggerRef = useRef<Record<string, HTMLElement | null>>({})
@@ -77,6 +82,18 @@ export default function OSScene() {
     const i = setInterval(() => setClock(currentClock()), 30000)
     return () => clearInterval(i)
   }, [])
+
+  // ページを一定量スクロールしたら「トップへ戻る」ボタンを表示する
+  // （実際の表示は compact 時のみ。下の描画ガードで制御する）
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 240)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+  }
 
   // Esc キーでアクティブ（最前面）なウィンドウを閉じる。
   // ランチャーメニュー表示中は Radix 側の Esc 処理（メニューを閉じる）を優先する。
@@ -195,7 +212,9 @@ export default function OSScene() {
       onClick={(e) => { if (e.target === screenRef.current) setSelectedIcon(null) }}
       className={cn(
         'relative w-full select-none',
-        compact ? 'min-h-svh' : 'h-svh overflow-hidden',
+        // compact 時は縦フレックスにして <main> を伸ばし、
+        // コンテンツが短くてもタスクバーをビューポート下端へ張り付かせる
+        compact ? 'flex min-h-svh flex-col' : 'h-svh overflow-hidden',
       )}
       style={DESKTOP_STYLE}
     >
@@ -301,7 +320,7 @@ export default function OSScene() {
         id="os-main"
         aria-label="ウィンドウ"
         tabIndex={-1}
-        className={cn('outline-none', compact && 'flex flex-col gap-3 px-2 pb-4')}
+        className={cn('outline-none', compact && 'flex grow flex-col gap-3 px-2 pb-4')}
       >
         <AnimatePresence>
           {windows.filter(w => !w.minimized).map(w => (
@@ -483,6 +502,35 @@ export default function OSScene() {
           ))}
         </div>
       </nav>
+
+      {/* トップへ戻る（compact 表示・スクロール時のみ） */}
+      <AnimatePresence>
+        {compact && showScrollTop ? (
+          <motion.button
+            key="scroll-top"
+            type="button"
+            onClick={scrollToTop}
+            aria-label="ページ最上部へ戻る"
+            data-testid="scroll-to-top"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className={cn(
+              'fc-border fixed right-4 bottom-16 z-[90] grid h-11 w-11 place-items-center rounded-full',
+              'text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+            )}
+            style={{
+              background: 'rgba(6,14,30,0.9)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(0,212,255,0.3)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+            }}
+          >
+            <ArrowUp size={20} strokeWidth={2} aria-hidden="true" />
+          </motion.button>
+        ) : null}
+      </AnimatePresence>
 
       {/* Boot splash */}
       <AnimatePresence>
