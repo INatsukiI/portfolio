@@ -44,8 +44,23 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      # ブラウザバイナリのダウンロードで時間が伸びるため Lint & Build & Test とは別ジョブにしている
-      - run: npx playwright install --with-deps chromium
+      # ブラウザバイナリのダウンロードで時間が伸びるため Lint & Build & Test とは別ジョブにしている。
+      # さらに ~/.cache/ms-playwright を Playwright のバージョンでキャッシュし、
+      # ヒット時はダウンロード（約20秒）と OS deps インストール（約13秒）を丸ごとスキップする。
+      # chromium が要求する共有ライブラリは ubuntu-latest イメージに同梱されている
+      # （Playwright チームが GitHub ランナー向けに追従している）ため、キャッシュヒット時は
+      # install-deps 不要。もし将来イメージ更新で不足したら install-deps を復活させる。
+      - name: Resolve Playwright version
+        id: playwright-version
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+      - name: Install Playwright browser (cache miss)
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: ${{ failure() }}
