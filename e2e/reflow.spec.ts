@@ -57,6 +57,28 @@ test.describe('狭幅・拡大表示（Reflow）', () => {
     await expect(page.getByRole('banner')).toBeInViewport()
   })
 
+  test('コンテンツがビューポートより短くてもタスクバーは画面下端に張り付く', async ({ page }) => {
+    await page.goto('/portfolio/')
+    await expect(page.getByText('LOADING KERNEL...')).toBeHidden({ timeout: 15_000 })
+
+    // 全ウィンドウを閉じてページをビューポートより短くする
+    await page.getByTestId('window-readme').getByRole('button', { name: '閉じる' }).click()
+    await expect(page.getByTestId('window-readme')).toHaveCount(0)
+
+    // 縦スクロールが発生しない（＝コンテンツがビューポートに収まっている）
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollHeight <= document.documentElement.clientHeight + 1,
+      ),
+    ).toBe(true)
+
+    // それでもタスクバーの下端はビューポート下端にある
+    const bar = page.getByRole('navigation', { name: 'タスクバー' })
+    const box = (await bar.boundingBox())!
+    const vh = page.viewportSize()!.height
+    expect(box.y + box.height).toBeGreaterThan(vh - 2)
+  })
+
   test('下方スクロール時に「トップへ戻る」ボタンが出て、押すと最上部へ戻る', async ({ page }) => {
     await page.goto('/portfolio/')
     await expect(page.getByText('LOADING KERNEL...')).toBeHidden({ timeout: 15_000 })

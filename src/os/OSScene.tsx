@@ -212,7 +212,9 @@ export default function OSScene() {
       onClick={(e) => { if (e.target === screenRef.current) setSelectedIcon(null) }}
       className={cn(
         'relative w-full select-none',
-        compact ? 'min-h-svh' : 'h-svh overflow-hidden',
+        // compact 時は縦フレックスにして <main> を伸ばし、
+        // コンテンツが短くてもタスクバーをビューポート下端へ張り付かせる
+        compact ? 'flex min-h-svh flex-col' : 'h-svh overflow-hidden',
       )}
       style={DESKTOP_STYLE}
     >
@@ -318,7 +320,7 @@ export default function OSScene() {
         id="os-main"
         aria-label="ウィンドウ"
         tabIndex={-1}
-        className={cn('outline-none', compact && 'flex flex-col gap-3 px-2 pb-4')}
+        className={cn('outline-none', compact && 'flex grow flex-col gap-3 px-2 pb-4')}
       >
         <AnimatePresence>
           {windows.filter(w => !w.minimized).map(w => (
