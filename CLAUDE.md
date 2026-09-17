@@ -86,7 +86,7 @@ npx playwright install chromium
 - Playwright Test で記述する。テストは `e2e/*.spec.ts`（vitest 対象外）。
 - 主要フロー（ウィンドウの開閉・最小化・最大化・移動・リサイズ、Contact フォーム）の回帰を守るのが目的。デスクトップ OS の骨格に関わる変更をしたら該当 spec を更新すること。
 - 要素の特定は `data-testid`（`desktop-icon-<id>` / `window-<id>` / `window-titlebar-<id>` / `taskbar-tab-<id>` / `launcher-trigger`）と ARIA ロール／ラベルを使う。CSS クラスに依存しない。
-- `npm run check` には含めない（ローカルの実行速度優先）。CI では `ci.yml` の独立ジョブ「E2E (Playwright)」で実行される。
+- `npm run check` には含めない（ローカルの実行速度優先）。CI では `ci.yml` の独立ジョブ「E2E (Playwright)」で実行され、これも main の branch protection 必須チェックなので、緑にならないと（オートマージ含め）マージできない。
 
 ## PR レビュー・マージフロー
 
@@ -99,7 +99,7 @@ npx playwright install chromium
    - 本ファイルのコーディング規約・命名規則・テストに関するルールへの準拠
    - アクセシビリティ（該当する場合）
    - CI が実際に通っているか
-3. 問題がなければ `gh pr merge <N> --merge` でそのまま main へマージする（人の承認は待たない）。必須チェック「Lint & Build & Test」は `pull_request`（対象 main）でも走るので、通常は `--admin` 不要。
+3. 問題がなければ `gh pr merge <N> --merge` でそのまま main へマージする（人の承認は待たない）。必須チェック「Lint & Build & Test」「E2E (Playwright)」は `pull_request`（対象 main）でも走るので、両方緑なら通常は `--admin` 不要。
 4. 問題があれば、そのブランチをチェックアウト済みの子ワークツリー／セッションが存在すればそこへ修正を依頼し、存在しない・応答がない場合は新しい worktree を自分で作成して直接修正する。修正後は `npm run check` と `npm run test` を通してから push し、2 に戻って再レビューする。
 5. 「修正 → 再レビュー」のループは **最大 3 回まで**。3 回試しても解決しない場合は自動マージを諦め、PR にコメントで指摘内容と試行結果を残し、ユーザーに報告して判断を仰ぐ。
 6. 作業用に作った一時 worktree は完了後に必ず `git worktree remove` で片付ける。他セッションが使用中の worktree には手を出さない。
