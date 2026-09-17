@@ -11,5 +11,6 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
         cache: npm
-    - run: npm ci
+    # キャッシュ済み tarball を優先し、audit / funding メタ取得のネットワーク往復を省く
+    - run: npm ci --prefer-offline --no-audit --fund=false
       shell: bash

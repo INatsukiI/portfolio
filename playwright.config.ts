@@ -5,11 +5,12 @@ const BASE_URL = 'http://localhost:5173/portfolio/'
 
 export default defineConfig({
   testDir: './e2e',
-  // E2E は目視確認と回帰防止が目的。CI では並列度を絞って安定性を優先する
+  // E2E は目視確認と回帰防止が目的。CI ランナー（ubuntu-latest / 4 vCPU）で
+  // 並列実行し、フレークは retries: 1 で吸収する
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 3 : undefined,
   reporter: process.env.CI
     ? [['github'], ['list'], ['html', { open: 'never' }]]
     : 'list',
