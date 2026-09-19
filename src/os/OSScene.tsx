@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { DropdownMenu } from 'radix-ui'
 import { ArrowUp } from 'lucide-react'
@@ -37,6 +37,26 @@ const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
 
+// 同一タブでの再訪（リロード等）ではブート演出を省略する。
+// sessionStorage が使えない環境（プライベートモード等）でも例外にせず単に演出を毎回表示するだけにする。
+const BOOT_STORAGE_KEY = 'omuos:booted'
+
+const hasBootedThisSession = () => {
+  try {
+    return typeof window !== 'undefined' && window.sessionStorage.getItem(BOOT_STORAGE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+const markBootedThisSession = () => {
+  try {
+    window.sessionStorage.setItem(BOOT_STORAGE_KEY, '1')
+  } catch {
+    // no-op: ストレージが使えなくても致命的ではない（毎回演出が出るだけ）
+  }
+}
+
 export default function OSScene() {
   const screenRef = useRef<HTMLDivElement>(null)
   const { w: cw, h: ch } = useContainerSize(screenRef)
@@ -51,8 +71,8 @@ export default function OSScene() {
   })
   const [zTop, setZTop] = useState(11)
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
-  // 「視差効果を減らす」設定時は起動アニメーションを省略（WCAG 2.3.3）
-  const [booting, setBooting] = useState(() => !prefersReducedMotion())
+  // 「視差効果を減らす」設定時、および同一タブでの再訪時は起動アニメーションを省略（WCAG 2.3.3）
+  const [booting, setBooting] = useState(() => !prefersReducedMotion() && !hasBootedThisSession())
   const [clock, setClock] = useState(currentClock())
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuSearch, setMenuSearch] = useState('')
@@ -76,6 +96,28 @@ export default function OSScene() {
     if (!booting) return
     const t = setTimeout(() => setBooting(false), 2000)
     return () => clearTimeout(t)
+  }, [booting])
+
+  // ブート演出表示中はクリック / 任意キーでスキップできるようにする
+  // （装飾要素だが、待たされている間の操作は許可する）
+  // useLayoutEffect で描画前にリスナーを登録する。ブート画面が表示された直後の
+  // キー入力・クリックを取りこぼさないようにする（特に自動テストや高速操作時）。
+  useLayoutEffect(() => {
+    if (!booting) return
+    const skip = () => setBooting(false)
+    window.addEventListener('click', skip)
+    window.addEventListener('keydown', skip)
+    return () => {
+      window.removeEventListener('click', skip)
+      window.removeEventListener('keydown', skip)
+    }
+  }, [booting])
+
+  // ブート演出が終わったら（自然完了・スキップ・reduced motion 問わず）
+  // 同一タブでの再訪時は省略できるようフラグを立てる
+  useEffect(() => {
+    if (booting) return
+    markBootedThisSession()
   }, [booting])
 
   useEffect(() => {
@@ -582,6 +624,15 @@ export default function OSScene() {
               style={{ color: 'rgba(0,212,255,0.7)', fontFamily: "'JetBrains Mono', monospace" }}
             >
               LOADING KERNEL...
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="text-sm tracking-wide"
+              style={{ color: '#93a7ba', fontFamily: "'JetBrains Mono', monospace" }}
+            >
+              press any key to skip
             </motion.div>
           </motion.div>
         ) : null}
