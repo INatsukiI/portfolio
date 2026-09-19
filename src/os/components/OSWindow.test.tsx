@@ -3,9 +3,9 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { OSWindow } from './OSWindow'
 
-// framer-motion の motion.div をシンプルな div に差し替え
+// framer-motion の m.div をシンプルな div に差し替え
 vi.mock('framer-motion', () => ({
-  motion: {
+  m: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     div: ({ children, style, className, onPointerDown, 'data-testid': dataTestId }: any) => (
       <div style={style} className={className} onPointerDown={onPointerDown} data-testid={dataTestId}>
@@ -56,6 +56,38 @@ describe('OSWindow', () => {
   it('開いたときにウィンドウへフォーカスが移る', () => {
     render(<OSWindow {...baseProps}><div>content</div></OSWindow>)
     expect(document.activeElement).toBe(screen.getByRole('dialog'))
+  })
+
+  it('focusToken が変化すると再びウィンドウへフォーカスが移る（タスクバー復帰・前面化用）', () => {
+    const { rerender } = render(
+      <OSWindow {...baseProps} focusToken={1}><div>content</div></OSWindow>,
+    )
+    const dialog = screen.getByRole('dialog')
+    // マウント直後にフォーカスが当たっている状態から、いったん別要素へ逃がす
+    const outside = document.createElement('button')
+    document.body.appendChild(outside)
+    outside.focus()
+    expect(document.activeElement).toBe(outside)
+
+    rerender(<OSWindow {...baseProps} focusToken={2}><div>content</div></OSWindow>)
+    expect(document.activeElement).toBe(dialog)
+
+    outside.remove()
+  })
+
+  it('focusToken が変化しなければフォーカスを奪わない（ウィンドウ内クリックからの意図しない奪取を防ぐ）', () => {
+    const { rerender } = render(
+      <OSWindow {...baseProps} focusToken={1}><div>content</div></OSWindow>,
+    )
+    const outside = document.createElement('button')
+    document.body.appendChild(outside)
+    outside.focus()
+    expect(document.activeElement).toBe(outside)
+
+    rerender(<OSWindow {...baseProps} focusToken={1} z={20}><div>content</div></OSWindow>)
+    expect(document.activeElement).toBe(outside)
+
+    outside.remove()
   })
 
   it('閉じるボタンで onClose が呼ばれる', async () => {
