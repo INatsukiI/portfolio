@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { MotionConfig, LazyMotion, domAnimation } from 'framer-motion'
 import './index.css'
 import App from './App'
+import { AppErrorBoundary } from './os/components/AppErrorBoundary'
 import jetbrainsMonoLatin400 from '@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2?url'
 import spaceGroteskLatin400 from '@fontsource/space-grotesk/files/space-grotesk-latin-400-normal.woff2?url'
 
@@ -21,13 +22,16 @@ for (const href of [jetbrainsMonoLatin400, spaceGroteskLatin400]) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {/* OS の「視差効果を減らす」設定時は Framer Motion のアニメを抑制（WCAG 2.3.3） */}
-    {/* motion コンポーネントは軽量な m + LazyMotion（domAnimation のみ）に絞り、
-        drag/layout などここで使わない機能をバンドルから外す */}
-    <MotionConfig reducedMotion="user">
-      <LazyMotion features={domAnimation} strict>
-        <App />
-      </LazyMotion>
-    </MotionConfig>
+    {/* デスクトップ本体のレンダーで致命的な例外が起きても真っ暗にならないようにする */}
+    <AppErrorBoundary>
+      {/* OS の「視差効果を減らす」設定時は Framer Motion のアニメを抑制（WCAG 2.3.3） */}
+      {/* motion コンポーネントは軽量な m + LazyMotion（domAnimation のみ）に絞り、
+          drag/layout などここで使わない機能をバンドルから外す */}
+      <MotionConfig reducedMotion="user">
+        <LazyMotion features={domAnimation} strict>
+          <App />
+        </LazyMotion>
+      </MotionConfig>
+    </AppErrorBoundary>
   </StrictMode>,
 )

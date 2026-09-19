@@ -10,6 +10,7 @@ import { DESKTOP_ICONS, WIN_DEFAULTS, OS_VERSION } from './constants'
 import type { WindowState } from './constants'
 import { DesktopIcon } from './components/DesktopIcon'
 import { OSWindow } from './components/OSWindow'
+import { WindowErrorBoundary } from './components/WindowErrorBoundary'
 import { WinAbout } from './windows/WinAbout'
 import { WinReadme } from './windows/WinReadme'
 import { WinTrash } from './windows/WinTrash'
@@ -368,7 +369,9 @@ export default function OSScene() {
               onMaximize={() => maximizeWindow(w.id)}
             >
               <Suspense fallback={<WinContentSkeleton />}>
-                {renderWindowContent(w)}
+                <WindowErrorBoundary title={w.title.split('—')[0].trim()} onClose={() => closeWindow(w.id)}>
+                  {renderWindowContent(w)}
+                </WindowErrorBoundary>
               </Suspense>
             </OSWindow>
           ))}
