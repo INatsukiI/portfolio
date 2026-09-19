@@ -9,10 +9,13 @@ export function WinAbout() {
     <div className="font-sans">
       <div style={{ display: 'flex', gap: 16, marginBottom: 16, alignItems: 'flex-start' }}>
         <img
-          src={`${import.meta.env.BASE_URL}avatar.png`}
+          src={`${import.meta.env.BASE_URL}avatar-88.webp`}
+          srcSet={`${import.meta.env.BASE_URL}avatar-88.webp 1x, ${import.meta.env.BASE_URL}avatar-176.webp 2x`}
           alt={`${profile.name} のアバター`}
           width={88}
           height={88}
+          loading="lazy"
+          decoding="async"
           className="flex-shrink-0 rounded-lg border border-border"
           style={{ imageRendering: 'pixelated', objectFit: 'cover' }}
         />

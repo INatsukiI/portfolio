@@ -42,4 +42,7 @@ export interface WindowState extends WindowDefault {
   z: number
   minimized?: boolean
   maximized?: boolean
+  /** タスクバー等から明示的にフォーカス要求されるたびに増分される値。
+   *  OSWindow はこれの変化を検知して dialog へ focus() を移す（WCAG 2.4.3）。 */
+  focusToken?: number
 }

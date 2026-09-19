@@ -23,7 +23,7 @@
 | ビルドツール | Vite 8 |
 | スタイリング | Tailwind CSS v4（`@tailwindcss/vite`）+ インラインスタイル併用 |
 | アイコン | lucide-react |
-| フォント | JetBrains Mono / Space Grotesk（Google Fonts） |
+| フォント | JetBrains Mono / Space Grotesk / Noto Sans JP（`@fontsource/*` でセルフホスト。外部の Google Fonts 読込はしない） |
 | Lint | Oxlint（Rust 製。`.oxlintrc.json` で設定） |
 | テスト（単体） | Vitest + @testing-library/react |
 | テスト（E2E）・UI目視確認 | Playwright（`@playwright/test`、Chromium のみ） |
