@@ -7,6 +7,7 @@ import { OSIcon } from './icons'
 import { useContainerSize, currentClock } from './hooks'
 import { DESKTOP_ICONS, WIN_DEFAULTS, OS_VERSION } from './constants'
 import type { WindowState } from './constants'
+import { initialWindowBand, resizeWindowMaxSize, clampSize, isSystemPanelVisible, bottomBarHeight } from './windowLayout'
 import { DesktopIcon } from './components/DesktopIcon'
 import { OSWindow } from './components/OSWindow'
 import { WinAbout } from './windows/WinAbout'
@@ -43,11 +44,20 @@ export default function OSScene() {
   // 狭幅・拡大表示時は「縦 1 カラムのドキュメント表示」へ切り替える（WCAG 1.4.10 Reflow）。
   // ウィンドウはドラッグ配置をやめて上下に積み、ページ全体を縦スクロールで到達可能にする。
   const compact = cw < 720
-  // window.innerWidth は同期で取れるので lazy initializer で中央 x を計算
+  // window.innerWidth は同期で取れるので lazy initializer で中央 x・上限サイズを計算。
+  // 起動直後のウィンドウもアイコン列・SYSTEM パネルと重ならないようクランプする（issue #120）。
   const [windows, setWindows] = useState<WindowState[]>(() => {
     const d = WIN_DEFAULTS.readme
-    const cx = Math.max(0, Math.floor((window.innerWidth - d.w) / 2))
-    return [{ id: 'readme', ...d, x: cx, z: 11 }]
+    const iw = window.innerWidth
+    const ih = window.innerHeight
+    const bootCompact = iw < 720
+    const { leftBound, rightBound, maxW, maxH } = initialWindowBand(iw, ih, bootCompact)
+    const { w: dw, h: dh } = clampSize(d.w, d.h, maxW, maxH)
+    const cx = leftBound + Math.max(0, Math.floor((rightBound - leftBound - dw) / 2))
+    const topBound = bootCompact ? 0 : 40
+    const bottomBound = Math.max(topBound, ih - bottomBarHeight(bootCompact) - dh)
+    const cy = Math.max(topBound, Math.min(bottomBound, d.y))
+    return [{ id: 'readme', ...d, w: dw, h: dh, x: cx, y: cy, z: 11 }]
   })
   const [zTop, setZTop] = useState(11)
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
@@ -125,21 +135,29 @@ export default function OSScene() {
       const d = WIN_DEFAULTS[id]
       if (!d) return ws
       const offset = (ws.length % 5) * 20
-      // xAlign に応じて基準 x を決める（right: 画面右端寄り、left: サイドバー右、center: 中央）
+      // 左のアイコン列・（表示時は）右の SYSTEM パネルと重ならない配置可能領域（帯）と
+      // 上限サイズを求め、幅・高さが画面に収まらない場合は縮小する（issue #120）。
       const EDGE = 16
-      const SIDEBAR = compact ? 0 : 160
+      const { leftBound, rightBound, maxW, maxH } = initialWindowBand(cw, ch, compact, EDGE)
+      const { w: dw, h: dh } = clampSize(d.w, d.h, maxW, maxH)
+      // xAlign に応じて基準 x を決める（right: 帯の右端寄り、left: 帯の左端、center: 帯の中央）
       let baseX: number
       if (d.xAlign === 'right') {
-        baseX = Math.max(0, cw - d.w - EDGE)
+        baseX = Math.max(leftBound, rightBound - dw)
       } else if (d.xAlign === 'left') {
-        baseX = SIDEBAR + EDGE
+        baseX = leftBound
       } else {
-        baseX = Math.max(0, Math.floor((cw - d.w) / 2))
+        baseX = leftBound + Math.max(0, Math.floor((rightBound - leftBound - dw) / 2))
       }
       // right/left 寄せの場合は x 方向のオフセットを小さめに抑える
       const xOff = d.xAlign && d.xAlign !== 'center' ? Math.min(offset, 10) : offset
-      const finalX = Math.max(0, Math.min(cw - EDGE, baseX + xOff))
-      return [...ws, { id, ...d, x: finalX, y: d.y + offset, z: newZ }]
+      // オフセットを加えても、アイコン列・SYSTEM パネルの予約領域からはみ出さない。
+      const maxX = Math.max(leftBound, rightBound - dw)
+      const finalX = Math.max(leftBound, Math.min(maxX, baseX + xOff))
+      const topBound = compact ? 0 : 40
+      const maxY = Math.max(topBound, ch - bottomBarHeight(compact) - dh)
+      const finalY = Math.max(topBound, Math.min(maxY, d.y + offset))
+      return [...ws, { id, ...d, w: dw, h: dh, x: finalX, y: finalY, z: newZ }]
     })
   }
 
@@ -165,18 +183,14 @@ export default function OSScene() {
     }))
   }
   const resizeWindow = (id: string, w: number, h: number) => {
-    const MIN_W = 280
-    const MIN_H = 180
     const EDGE = 8
-    const bottomBar = compact ? 48 : 44
+    const bottomBar = bottomBarHeight(compact)
     setWindows(ws => ws.map(win => {
       if (win.id !== id) return win
       // 画面内に収まることを最小サイズより優先する。幅/高さの絶対上限は画面サイズから決め、
       // それでもwin.x/win.yのままだと右端・下端をはみ出す場合はx/yを詰めて画面内に収める。
-      const absMaxW = Math.max(MIN_W, cw - EDGE * 2)
-      const absMaxH = Math.max(MIN_H, ch - bottomBar)
-      const newW = Math.min(Math.max(w, MIN_W), absMaxW)
-      const newH = Math.min(Math.max(h, MIN_H), absMaxH)
+      const { maxW: absMaxW, maxH: absMaxH } = resizeWindowMaxSize(cw, ch, compact, EDGE)
+      const { w: newW, h: newH } = clampSize(w, h, absMaxW, absMaxH)
       const newX = Math.min(win.x, Math.max(EDGE, cw - newW - EDGE))
       const newY = Math.min(win.y, Math.max(0, ch - newH - bottomBar))
       return {
@@ -277,8 +291,9 @@ export default function OSScene() {
         ))}
       </nav>
 
-      {/* System info panel — desktop only（装飾的なので支援技術からは隠す） */}
-      {compact ? null : (
+      {/* System info panel — desktop only（装飾的なので支援技術からは隠す）。
+          900px 未満では起動直後のウィンドウと重なりやすいため非表示にする（issue #120） */}
+      {isSystemPanelVisible(cw, compact) ? (
         <div
           aria-hidden="true"
           className="fc-border absolute top-12 right-3 z-[1] w-52 rounded-lg p-3 text-sm"
@@ -313,7 +328,7 @@ export default function OSScene() {
           </div>
           <div className="mt-1 text-sm">CPU 72% · MEM 4.3 GB</div>
         </div>
-      )}
+      ) : null}
 
       {/* Windows */}
       <main
