@@ -49,7 +49,7 @@ export function WinReadme({ onOpen }: WinReadmeProps) {
 
       <SectionHead as="h3">tips</SectionHead>
       <ul className="mt-3 mb-5 space-y-1.5 list-none p-0">
-        {['アイコンをタップ / クリックしてウィンドウを開く', 'タイトルバー左の × ボタン、または Esc キーでウィンドウを閉じる', '画面下のタスクバーから閉じたウィンドウを再オープン'].map((tip, i) => (
+        {['アイコンをタップ / クリックしてウィンドウを開く', 'タイトルバー左の × ボタン、または Esc キーでウィンドウを閉じる', '画面下のタスクバーから閉じたウィンドウを再オープン', 'URL 末尾に #projects などを付けると、そのウィンドウを開いた状態で共有できる（複数は #about,projects のようにカンマ区切り）'].map((tip, i) => (
           <li key={i} className="flex gap-2 text-muted-foreground">
             <span className="text-border" aria-hidden="true">›</span>{tip}
           </li>

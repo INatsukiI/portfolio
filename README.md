@@ -15,6 +15,10 @@ The React Compiler is not enabled on this template because of its impact on dev 
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 
+## URL ハッシュでウィンドウを直接開く
+
+`/portfolio/#projects` のように URL 末尾へ既知のウィンドウ ID を付けると、起動時にそのウィンドウを開いた状態で共有できる（複数は `/portfolio/#about,projects` のようにカンマ区切り）。ウィンドウの開閉に合わせてハッシュは自動更新される（`history.replaceState` のため履歴は汚れない）。
+
 ## テスト
 
 ```bash
