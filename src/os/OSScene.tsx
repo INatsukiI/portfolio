@@ -202,7 +202,7 @@ export default function OSScene() {
     if (w.id === 'contact')  return <WinContact />
     if (w.id === 'trash')    return <WinTrash />
     if (w.id === 'zenn')     return <WinZenn />
-    if (w.id === 'terminal') return <WinTerminal onOpen={openWindow} />
+    if (w.id === 'terminal') return <WinTerminal onOpen={openWindow} onClose={() => closeWindow(w.id)} />
     return null
   }
 
