@@ -54,7 +54,10 @@ export default function OSScene() {
     const { leftBound, rightBound, maxW, maxH } = initialWindowBand(iw, ih, bootCompact)
     const { w: dw, h: dh } = clampSize(d.w, d.h, maxW, maxH)
     const cx = leftBound + Math.max(0, Math.floor((rightBound - leftBound - dw) / 2))
-    return [{ id: 'readme', ...d, w: dw, h: dh, x: cx, z: 11 }]
+    const topBound = bootCompact ? 0 : 40
+    const bottomBound = Math.max(topBound, ih - bottomBarHeight(bootCompact) - dh)
+    const cy = Math.max(topBound, Math.min(bottomBound, d.y))
+    return [{ id: 'readme', ...d, w: dw, h: dh, x: cx, y: cy, z: 11 }]
   })
   const [zTop, setZTop] = useState(11)
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
@@ -148,8 +151,13 @@ export default function OSScene() {
       }
       // right/left 寄せの場合は x 方向のオフセットを小さめに抑える
       const xOff = d.xAlign && d.xAlign !== 'center' ? Math.min(offset, 10) : offset
-      const finalX = Math.max(0, Math.min(cw - EDGE, baseX + xOff))
-      return [...ws, { id, ...d, w: dw, h: dh, x: finalX, y: d.y + offset, z: newZ }]
+      // オフセットを加えても、アイコン列・SYSTEM パネルの予約領域からはみ出さない。
+      const maxX = Math.max(leftBound, rightBound - dw)
+      const finalX = Math.max(leftBound, Math.min(maxX, baseX + xOff))
+      const topBound = compact ? 0 : 40
+      const maxY = Math.max(topBound, ch - bottomBarHeight(compact) - dh)
+      const finalY = Math.max(topBound, Math.min(maxY, d.y + offset))
+      return [...ws, { id, ...d, w: dw, h: dh, x: finalX, y: finalY, z: newZ }]
     })
   }
 
