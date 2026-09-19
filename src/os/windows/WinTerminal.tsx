@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { PROFILE } from '../../profile'
 import { OS } from '../theme'
 import { OS_VERSION } from '../constants'
-import { LS_FILES, OPEN_MAP, completeInput } from './terminalComplete'
+import { completeInput } from './terminalComplete'
+import { COMMANDS } from './terminalCommands'
 
 interface TermLine {
   type: 'input' | 'output' | 'error'
@@ -15,80 +15,12 @@ const MAX_LINES = 500
 const trim = (lines: TermLine[]) =>
   lines.length > MAX_LINES ? lines.slice(lines.length - MAX_LINES) : lines
 
-function buildCat(file: string): string[] | null {
-  switch (file) {
-    case 'about.txt':
-      return [
-        `name    : ${PROFILE.name}`,
-        `title   : ${PROFILE.title}`,
-        `location: ${PROFILE.location}`,
-        `exp     : ${PROFILE.exp}`,
-        ``,
-        PROFILE.bio,
-        ``,
-        `tagline : ${PROFILE.tagline}`,
-      ]
-    case 'skills.txt':
-      return [
-        'SKILLS',
-        '──────',
-        ...PROFILE.skills.map(s => `  ${s.lv.padEnd(6)} ${s.name.padEnd(20)} [${s.cat}]`),
-      ]
-    case 'projects.txt':
-      return [
-        'PROJECTS',
-        '────────',
-        ...PROFILE.projects.flatMap(p => [
-          `  ${p.name} (${p.status})`,
-          `    ${p.desc}`,
-          `    tech: ${p.tech.join(', ')}`,
-          p.url ? `    url : ${p.url}` : '',
-          '',
-        ]),
-      ]
-    case 'career.log':
-      return [
-        'CAREER LOG',
-        '──────────',
-        ...PROFILE.history.flatMap(h => [
-          `  [${h.year}] ${h.title}`,
-          `    ${h.org}`,
-          `    ${h.body}`,
-          '',
-        ]),
-      ]
-    case 'contact.app':
-      return [
-        'CONTACT',
-        '───────',
-        ...PROFILE.contact.map(c => `  ${c.label.padEnd(8)}: ${c.val}`),
-        `  Email   : ${PROFILE.email}`,
-      ]
-    case 'zenn.dev/':
-      return [`zenn.dev/${PROFILE.contact.find(c => c.key === 'zenn')?.val.replace('zenn.dev/', '') ?? ''}`]
-    default:
-      return null
-  }
-}
-
-const HELP_LINES = [
-  'Available commands:',
-  '',
-  '  help                 このヘルプを表示',
-  '  ls                   ファイル一覧',
-  '  cat <file>           ファイルの内容を表示',
-  '  open <app>           ウィンドウを開く',
-  '  whoami               ユーザー情報',
-  '  date                 現在日時',
-  '  history              コマンド履歴',
-  '  clear                画面クリア',
-]
-
 interface WinTerminalProps {
   onOpen?: (id: string) => void
+  onClose?: () => void
 }
 
-export function WinTerminal({ onOpen }: WinTerminalProps) {
+export function WinTerminal({ onOpen, onClose }: WinTerminalProps) {
   const [lines, setLines] = useState<TermLine[]>([
     { type: 'output', text: `OMU/OS terminal ${OS_VERSION} — type "help" for available commands.` },
     { type: 'output', text: '' },
@@ -114,67 +46,34 @@ export function WinTerminal({ onOpen }: WinTerminalProps) {
     const trimmed = raw.trim()
     if (!trimmed) return
 
-    setLines(prev => trim([...prev, { type: 'input', text: `${PROMPT} ${trimmed}` }]))
+    const [cmdName, ...args] = trimmed.split(/\s+/)
+    const command = COMMANDS.find(c => c.name === cmdName.toLowerCase())
+
     cmdHistory.current = [trimmed, ...cmdHistory.current.slice(0, 49)]
     setHistIdx(-1)
 
-    const [cmd, ...args] = trimmed.split(/\s+/)
-
-    switch (cmd.toLowerCase()) {
-      case 'help':
-        pushLines(HELP_LINES)
-        break
-
-      case 'ls':
-        pushLines([LS_FILES.join('    ')])
-        break
-
-      case 'cat': {
-        const file = args[0]
-        if (!file) { pushLines(['Usage: cat <file>'], 'error'); break }
-        const content = buildCat(file)
-        if (!content) { pushLines([`cat: ${file}: No such file`], 'error'); break }
-        pushLines(content)
-        break
-      }
-
-      case 'open': {
-        const target = args[0]
-        if (!target) { pushLines(['Usage: open <app>'], 'error'); break }
-        const id = OPEN_MAP[target.toLowerCase()]
-        if (!id) { pushLines([`open: ${target}: not found`], 'error'); break }
-        pushLines([`Opening ${target}...`])
-        onOpen?.(id)
-        break
-      }
-
-      case 'whoami':
-        pushLines([
-          `${PROFILE.handle}`,
-          `${PROFILE.title} @ ${PROFILE.location}`,
-          `exp: ${PROFILE.exp}`,
-        ])
-        break
-
-      case 'date':
-        pushLines([new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })])
-        break
-
-      case 'history':
-        if (cmdHistory.current.length === 0) { pushLines(['(no history)']); break }
-        pushLines(cmdHistory.current.slice(0, 20).map((c, i) => `  ${String(i + 1).padStart(3)}  ${c}`))
-        break
-
-      case 'clear':
-        setLines([])
-        break
-
-      default:
-        pushLines([`${cmd}: command not found — type "help" for available commands`], 'error')
+    // clear は入力エコー・末尾の空行も残さず画面を完全にクリアする
+    if (command?.name === 'clear') {
+      setLines([])
+      return
     }
 
+    setLines(prev => trim([...prev, { type: 'input', text: `${PROMPT} ${trimmed}` }]))
+
+    if (!command) {
+      pushLines([`${cmdName}: command not found — type "help" for available commands`], 'error')
+      pushLines([''])
+      return
+    }
+
+    const result = command.run(args, { history: cmdHistory.current })
+    pushLines(result.lines, result.variant ?? 'output')
+
+    if (result.openId) onOpen?.(result.openId)
+    if (result.exit) { onClose?.(); return }
+
     pushLines([''])
-  }, [onOpen, pushLines])
+  }, [onOpen, onClose, pushLines])
 
   const syncCursor = (el: HTMLInputElement) => {
     setCursorPos(el.selectionStart ?? el.value.length)

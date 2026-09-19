@@ -82,6 +82,15 @@ describe('WinTerminal', () => {
     expect(screen.queryByText(/Available commands/)).toBeNull()
   })
 
+  it('clear 直後は行数が 0 になる（入力エコー・末尾の空行も残さない）', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<WinTerminal />)
+    const input = screen.getByRole('textbox')
+    await user.type(input, 'help{Enter}')
+    await user.type(input, 'clear{Enter}')
+    expect(container.querySelectorAll('.whitespace-pre-wrap')).toHaveLength(0)
+  })
+
   it('open コマンドで onOpen コールバックを呼ぶ', async () => {
     const user = userEvent.setup()
     const onOpen = vi.fn()
@@ -89,6 +98,70 @@ describe('WinTerminal', () => {
     const input = screen.getByRole('textbox')
     await user.type(input, 'open about{Enter}')
     expect(onOpen).toHaveBeenCalledWith('about')
+  })
+
+  it('exit コマンドで onClose コールバックを呼びウィンドウを閉じる', async () => {
+    const user = userEvent.setup()
+    const onClose = vi.fn()
+    render(<WinTerminal onClose={onClose} />)
+    const input = screen.getByRole('textbox')
+    await user.type(input, 'exit{Enter}')
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('quit コマンドでも onClose コールバックを呼ぶ', async () => {
+    const user = userEvent.setup()
+    const onClose = vi.fn()
+    render(<WinTerminal onClose={onClose} />)
+    const input = screen.getByRole('textbox')
+    await user.type(input, 'quit{Enter}')
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('echo コマンドで引数をそのまま表示する', async () => {
+    const user = userEvent.setup()
+    render(<WinTerminal />)
+    const input = screen.getByRole('textbox')
+    await user.type(input, 'echo hello world{Enter}')
+    expect(screen.getByText('hello world')).toBeTruthy()
+  })
+
+  it('pwd コマンドで ~ を表示する', async () => {
+    const user = userEvent.setup()
+    render(<WinTerminal />)
+    const input = screen.getByRole('textbox')
+    await user.type(input, 'pwd{Enter}')
+    expect(screen.getByText('~')).toBeTruthy()
+  })
+
+  it('neofetch コマンドで OS 情報を表示する', async () => {
+    const user = userEvent.setup()
+    render(<WinTerminal />)
+    const input = screen.getByRole('textbox')
+    await user.type(input, 'neofetch{Enter}')
+    expect(screen.getByText(/Shell\s*:\s*omu-sh/)).toBeTruthy()
+  })
+
+  it('help の一覧に新しいコマンドも表示される（help と Tab 補完が同一ソース）', async () => {
+    const user = userEvent.setup()
+    render(<WinTerminal />)
+    const input = screen.getByRole('textbox')
+    await user.type(input, 'help{Enter}')
+    expect(screen.getByText(/^exit\s/)).toBeTruthy()
+    expect(screen.getByText(/^neofetch\s/)).toBeTruthy()
+  })
+
+  it('history コマンドは古い順（bash 準拠）で表示する', async () => {
+    const user = userEvent.setup()
+    render(<WinTerminal />)
+    const input = screen.getByRole('textbox')
+    await user.type(input, 'whoami{Enter}')
+    await user.type(input, 'pwd{Enter}')
+    await user.type(input, 'history{Enter}')
+    // whoami (1件目) が pwd (2件目) より前＝上に表示される
+    const whoamiLine = screen.getByText(/1\s+whoami/)
+    const pwdLine = screen.getByText(/2\s+pwd/)
+    expect(whoamiLine.compareDocumentPosition(pwdLine) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it('↑キーでコマンド履歴を遡る', async () => {

@@ -1,29 +1,10 @@
 // 擬似ターミナルの Tab 入力補完ロジック。
 // WinTerminal.tsx から分離し、純粋関数としてテスト可能にする。
+// コマンド名・ファイル一覧・open 対象は terminalCommands.ts の単一ソースを参照する。
 
-// コマンド名の単一ソース。runCommand の switch 分岐とここを一致させる。
-export const COMMANDS = [
-  'help', 'ls', 'cat', 'open', 'whoami', 'date', 'history', 'clear',
-] as const
+import { COMMANDS, LS_FILES, OPEN_TARGETS } from './terminalCommands'
 
-export const LS_FILES = [
-  'about.txt', 'skills.txt', 'projects.txt',
-  'career.log', 'contact.app', 'zenn.dev/',
-]
-
-export const OPEN_MAP: Record<string, string> = {
-  'about': 'about', 'about.txt': 'about', 'profile': 'about', 'profile.txt': 'about',
-  'skills': 'skills', 'skills.txt': 'skills', 'skills.app': 'skills',
-  'projects': 'projects', 'projects.txt': 'projects', 'projects/': 'projects',
-  'career': 'career', 'career.log': 'career',
-  'contact': 'contact', 'contact.app': 'contact',
-  'zenn': 'zenn', 'zenn.dev': 'zenn', 'zenn.dev/': 'zenn',
-  'readme': 'readme', 'welcome': 'readme', 'welcome.txt': 'readme',
-  'terminal': 'terminal', 'terminal.app': 'terminal',
-}
-
-// open 補完候補 = id と同名の代表キーのみ（.txt などの別名は除外）
-export const OPEN_TARGETS = Object.keys(OPEN_MAP).filter(k => k === OPEN_MAP[k])
+const COMMAND_NAMES = COMMANDS.map(c => c.name)
 
 export interface CompleteResult {
   text: string
@@ -68,7 +49,7 @@ export function completeInput(input: string, cursor: number, showList: boolean):
   let candidates: string[]
   let caseInsensitive: boolean
   if (isCommand) {
-    candidates = [...COMMANDS]
+    candidates = COMMAND_NAMES
     caseInsensitive = true
   } else if ((command === 'cat' || command === 'ls') && argIndex === 0) {
     candidates = LS_FILES
