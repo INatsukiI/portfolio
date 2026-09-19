@@ -9,7 +9,7 @@
       meta タグで CSP を設定する（frame-ancestors / report-uri など一部ディレクティブは
       meta では無効なため含めていない）。
     -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://zenn.dev; script-src 'self'; object-src 'none'; base-uri 'self';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://zenn.dev; script-src 'self'; object-src 'none'; base-uri 'self';" />
     <title>OMU OS | omu's Portfolio</title>
     <meta name="description" content="「ものをつくり、人にとどける。」― Webサービスの設計から実装・運用まで一貫してこなすバックエンドエンジニア omu のポートフォリオ。" />
 
@@ -30,9 +30,6 @@
     <meta name="twitter:image"       content="https://inatsukii.github.io/portfolio/avatar.png" />
 
     <link rel="canonical" href="https://inatsukii.github.io/portfolio/" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>
