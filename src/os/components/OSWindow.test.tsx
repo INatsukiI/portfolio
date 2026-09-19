@@ -3,9 +3,9 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { OSWindow } from './OSWindow'
 
-// framer-motion の motion.div をシンプルな div に差し替え
+// framer-motion の m.div をシンプルな div に差し替え
 vi.mock('framer-motion', () => ({
-  motion: {
+  m: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     div: ({ children, style, className, onPointerDown, 'data-testid': dataTestId }: any) => (
       <div style={style} className={className} onPointerDown={onPointerDown} data-testid={dataTestId}>

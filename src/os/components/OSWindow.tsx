@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef } from 'react'
 import type { CSSProperties, ReactNode, PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { X, Minus, Square } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { IconKey } from '../icons'
@@ -131,7 +131,7 @@ export function OSWindow({ id, title, x, y, w, h, z, compact, maximized, onClose
   }
 
   return (
-    <motion.div
+    <m.div
       data-testid={`window-${id}`}
       onPointerDown={onFocus}
       initial={{ opacity: 0, scale: 0.96, y: -8 }}
@@ -293,6 +293,6 @@ export function OSWindow({ id, title, x, y, w, h, z, compact, maximized, onClose
           </>
         ) : null}
       </div>
-    </motion.div>
+    </m.div>
   )
 }
