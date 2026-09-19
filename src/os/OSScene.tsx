@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { DropdownMenu } from 'radix-ui'
 import { ArrowUp } from 'lucide-react'
@@ -100,7 +100,9 @@ export default function OSScene() {
 
   // ブート演出表示中はクリック / 任意キーでスキップできるようにする
   // （装飾要素だが、待たされている間の操作は許可する）
-  useEffect(() => {
+  // useLayoutEffect で描画前にリスナーを登録する。ブート画面が表示された直後の
+  // キー入力・クリックを取りこぼさないようにする（特に自動テストや高速操作時）。
+  useLayoutEffect(() => {
     if (!booting) return
     const skip = () => setBooting(false)
     window.addEventListener('click', skip)
