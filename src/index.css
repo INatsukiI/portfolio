@@ -49,8 +49,12 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Dark futuristic palette — always-on dark mode */
+/* Dark futuristic palette — always-on dark mode
+   <html class="dark"> 固定のため :root と .dark で値が分岐することはない。
+   UA 標準コントロール（スクロールバー / フォームコントロール等）をダークで
+   描画させるため color-scheme も明示する。 */
 :root {
+  color-scheme: dark;
   --background:           oklch(0.07 0.02 254);        /* #080c14 dark navy */
   --foreground:           oklch(0.86 0.026 224);        /* #c8d8e8 */
   --card:                 oklch(0.11 0.025 252);        /* glass dark surface */
@@ -71,40 +75,6 @@
   --input:                oklch(0.82 0.16 204 / 20%);
   --ring:                 oklch(0.82 0.16 204);
   --radius:               0.375rem;
-  --chart-1: oklch(0.82 0.16 204);
-  --chart-2: oklch(0.75 0.16 160);
-  --chart-3: oklch(0.70 0.18 280);
-  --chart-4: oklch(0.70 0.18 30);
-  --chart-5: oklch(0.60 0.22 15);
-  --sidebar:                  oklch(0.11 0.025 252);
-  --sidebar-foreground:       oklch(0.86 0.026 224);
-  --sidebar-primary:          oklch(0.82 0.16 204);
-  --sidebar-primary-foreground: oklch(0.07 0.02 254);
-  --sidebar-accent:           oklch(0.82 0.16 204 / 15%);
-  --sidebar-accent-foreground: oklch(0.82 0.16 204);
-  --sidebar-border:           oklch(0.82 0.16 204 / 15%);
-  --sidebar-ring:             oklch(0.82 0.16 204);
-}
-
-.dark {
-  --background:           oklch(0.07 0.02 254);
-  --foreground:           oklch(0.86 0.026 224);
-  --card:                 oklch(0.11 0.025 252);
-  --card-foreground:      oklch(0.86 0.026 224);
-  --popover:              oklch(0.09 0.025 252);
-  --popover-foreground:   oklch(0.86 0.026 224);
-  --primary:              oklch(0.82 0.16 204);
-  --primary-foreground:   oklch(0.07 0.02 254);
-  --secondary:            oklch(0.13 0.02 250);
-  --secondary-foreground: oklch(0.86 0.026 224);
-  --muted:                oklch(0.13 0.02 250);
-  --muted-foreground:     oklch(0.75 0.035 224);
-  --accent:               oklch(0.82 0.16 204 / 15%);
-  --accent-foreground:    oklch(0.82 0.16 204);
-  --destructive:          oklch(0.60 0.22 15);
-  --border:               oklch(0.82 0.16 204 / 15%);
-  --input:                oklch(0.82 0.16 204 / 20%);
-  --ring:                 oklch(0.82 0.16 204);
   --chart-1: oklch(0.82 0.16 204);
   --chart-2: oklch(0.75 0.16 160);
   --chart-3: oklch(0.70 0.18 280);
