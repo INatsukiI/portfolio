@@ -24,6 +24,37 @@ test('最小化するとウィンドウが隠れ、タスクバーから復帰�
   await expect(win).toBeVisible()
 })
 
+test('最小化したウィンドウをタスクバーから復帰すると、そのウィンドウの dialog にフォーカスが移る（WCAG 2.4.3）', async ({ page }) => {
+  const win = page.getByTestId('window-about')
+  const aboutDialog = page.getByRole('dialog', { name: 'profile.txt — メモ帳' })
+
+  await win.getByRole('button', { name: '最小化' }).click()
+  await expect(win).toBeHidden()
+
+  await page.getByTestId('taskbar-tab-about').click()
+  await expect(win).toBeVisible()
+  await expect(aboutDialog).toBeFocused()
+})
+
+test('タスクバータブで背面のウィンドウを前面化すると、そのウィンドウの dialog にフォーカスが移る（WCAG 2.4.3）', async ({ page }) => {
+  // beforeEach で about を開いた時点で about にフォーカスがあり、起動時に開いていた
+  // readme は背面に回っている（最小化はされていない）。この状態から readme を前面化する。
+  const readmeDialog = page.getByRole('dialog', { name: 'welcome.txt — メモ帳' })
+
+  await page.getByTestId('taskbar-tab-readme').click()
+
+  await expect(readmeDialog).toBeFocused()
+})
+
+test('タスクバータブを Enter キーで操作しても、そのウィンドウの dialog にフォーカスが移る', async ({ page }) => {
+  const readmeDialog = page.getByRole('dialog', { name: 'welcome.txt — メモ帳' })
+
+  await page.getByTestId('taskbar-tab-readme').focus()
+  await page.keyboard.press('Enter')
+
+  await expect(readmeDialog).toBeFocused()
+})
+
 test('最大化で画面幅いっぱいに広がり、もう一度押すと元に戻る', async ({ page }) => {
   const win = page.getByTestId('window-about')
 

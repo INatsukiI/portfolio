@@ -58,6 +58,38 @@ describe('OSWindow', () => {
     expect(document.activeElement).toBe(screen.getByRole('dialog'))
   })
 
+  it('focusToken が変化すると再びウィンドウへフォーカスが移る（タスクバー復帰・前面化用）', () => {
+    const { rerender } = render(
+      <OSWindow {...baseProps} focusToken={1}><div>content</div></OSWindow>,
+    )
+    const dialog = screen.getByRole('dialog')
+    // マウント直後にフォーカスが当たっている状態から、いったん別要素へ逃がす
+    const outside = document.createElement('button')
+    document.body.appendChild(outside)
+    outside.focus()
+    expect(document.activeElement).toBe(outside)
+
+    rerender(<OSWindow {...baseProps} focusToken={2}><div>content</div></OSWindow>)
+    expect(document.activeElement).toBe(dialog)
+
+    outside.remove()
+  })
+
+  it('focusToken が変化しなければフォーカスを奪わない（ウィンドウ内クリックからの意図しない奪取を防ぐ）', () => {
+    const { rerender } = render(
+      <OSWindow {...baseProps} focusToken={1}><div>content</div></OSWindow>,
+    )
+    const outside = document.createElement('button')
+    document.body.appendChild(outside)
+    outside.focus()
+    expect(document.activeElement).toBe(outside)
+
+    rerender(<OSWindow {...baseProps} focusToken={1} z={20}><div>content</div></OSWindow>)
+    expect(document.activeElement).toBe(outside)
+
+    outside.remove()
+  })
+
   it('閉じるボタンで onClose が呼ばれる', async () => {
     const onClose = vi.fn()
     const user = userEvent.setup()
