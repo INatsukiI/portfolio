@@ -29,14 +29,14 @@ describe('DesktopIcon', () => {
     expect(onOpen).toHaveBeenCalledOnce()
   })
 
-  it('selected=true のときリングのクラスが付く', () => {
-    const { container } = render(<DesktopIcon {...baseProps} selected={true} />)
-    expect((container.firstChild as HTMLElement).className).toContain('ring-1')
+  it('selected=true のとき aria-pressed が true になる', () => {
+    render(<DesktopIcon {...baseProps} selected={true} />)
+    expect(screen.getByRole('button', { name: 'profile.txt' }).getAttribute('aria-pressed')).toBe('true')
   })
 
-  it('selected=false のときリングのクラスが付かない', () => {
-    const { container } = render(<DesktopIcon {...baseProps} selected={false} />)
-    expect((container.firstChild as HTMLElement).className).not.toContain('ring-1')
+  it('selected=false のとき aria-pressed が false になる', () => {
+    render(<DesktopIcon {...baseProps} selected={false} />)
+    expect(screen.getByRole('button', { name: 'profile.txt' }).getAttribute('aria-pressed')).toBe('false')
   })
 
   it('testId を渡すと data-testid に設定される', () => {
@@ -49,10 +49,11 @@ describe('DesktopIcon', () => {
     expect(screen.getByRole('button', { name: 'profile.txt' }).hasAttribute('data-testid')).toBe(false)
   })
 
-  it('role=button・tabIndex=0・aria-label が設定される', () => {
+  it('ネイティブ button 要素として描画され、aria-label が設定される', () => {
     render(<DesktopIcon {...baseProps} />)
     const el = screen.getByRole('button', { name: 'profile.txt' })
-    expect(el.getAttribute('tabindex')).toBe('0')
+    expect(el.tagName).toBe('BUTTON')
+    expect(el.getAttribute('type')).toBe('button')
   })
 
   it('Enter キーで onOpen が呼ばれる', async () => {
