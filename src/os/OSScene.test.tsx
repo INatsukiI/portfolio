@@ -3,9 +3,9 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import OSScene from './OSScene'
 
-// framer-motion の motion.div / AnimatePresence をシンプルな DOM に差し替え
+// framer-motion の m.div / AnimatePresence をシンプルな DOM に差し替え
 vi.mock('framer-motion', () => ({
-  motion: {
+  m: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     div: ({ children, ...rest }: any) => <div {...rest}>{children}</div>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

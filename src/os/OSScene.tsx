@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { AnimatePresence, m } from 'framer-motion'
 import { DropdownMenu } from 'radix-ui'
 import { ArrowUp } from 'lucide-react'
 import { PROFILE } from '../profile'
+import { OS } from './theme'
 import { OSIcon } from './icons'
 import { useContainerSize, currentClock } from './hooks'
 import { DESKTOP_ICONS, WIN_DEFAULTS, OS_VERSION } from './constants'
@@ -10,15 +11,37 @@ import type { WindowState } from './constants'
 import { DesktopIcon } from './components/DesktopIcon'
 import { OSWindow } from './components/OSWindow'
 import { WinAbout } from './windows/WinAbout'
-import { WinSkills } from './windows/WinSkills'
-import { WinProjects } from './windows/WinProjects'
-import { WinCareer } from './windows/WinCareer'
-import { WinContact } from './windows/WinContact'
 import { WinReadme } from './windows/WinReadme'
 import { WinTrash } from './windows/WinTrash'
-import { WinZenn } from './windows/WinZenn'
-import { WinTerminal } from './windows/WinTerminal'
 import { cn } from '@/lib/utils'
+
+// 初回表示に不要なウィンドウ（ターミナル / Zenn / Contact / Skills / Projects / Career）は
+// React.lazy で分割し、初期 JS から切り離す（開いたときだけ取得する）
+const WinSkills   = lazy(() => import('./windows/WinSkills').then(mod => ({ default: mod.WinSkills })))
+const WinProjects = lazy(() => import('./windows/WinProjects').then(mod => ({ default: mod.WinProjects })))
+const WinCareer   = lazy(() => import('./windows/WinCareer').then(mod => ({ default: mod.WinCareer })))
+const WinContact  = lazy(() => import('./windows/WinContact').then(mod => ({ default: mod.WinContact })))
+const WinZenn     = lazy(() => import('./windows/WinZenn').then(mod => ({ default: mod.WinZenn })))
+const WinTerminal = lazy(() => import('./windows/WinTerminal').then(mod => ({ default: mod.WinTerminal })))
+
+// 遅延ロード中のフォールバック（ウィンドウ内スケルトン）。ちらつきを避けるため
+// タイトルバー等はそのまま表示し、コンテンツ領域だけこのプレースホルダーに差し替える。
+function WinContentSkeleton() {
+  return (
+    <div className="flex flex-col gap-3" aria-hidden="true">
+      {[...Array(3)].map((_, i) => (
+        <div
+          key={i}
+          className="rounded-lg p-4 animate-pulse"
+          style={{ background: OS.chromeHi, border: `1px solid ${OS.bodyEdge}` }}
+        >
+          <div className="h-3 rounded mb-2" style={{ background: OS.bodyEdge, width: `${60 + i * 10}%` }} />
+          <div className="h-2 rounded" style={{ background: OS.bodyEdge, width: '40%' }} />
+        </div>
+      ))}
+    </div>
+  )
+}
 
 const DESKTOP_STYLE = {
   background: '#080c14',
@@ -303,7 +326,7 @@ export default function OSScene() {
             </div>
           ))}
           <div className="mt-3 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.12)' }}>
-            <motion.div
+            <m.div
               className="h-full rounded-full"
               style={{ background: 'linear-gradient(90deg, #00d4ff, #7c3aed)', width: '72%' }}
               initial={{ width: 0 }}
@@ -336,7 +359,9 @@ export default function OSScene() {
               onMinimize={() => minimizeWindow(w.id)}
               onMaximize={() => maximizeWindow(w.id)}
             >
-              {renderWindowContent(w)}
+              <Suspense fallback={<WinContentSkeleton />}>
+                {renderWindowContent(w)}
+              </Suspense>
             </OSWindow>
           ))}
         </AnimatePresence>
@@ -506,7 +531,7 @@ export default function OSScene() {
       {/* トップへ戻る（compact 表示・スクロール時のみ） */}
       <AnimatePresence>
         {compact && showScrollTop ? (
-          <motion.button
+          <m.button
             key="scroll-top"
             type="button"
             onClick={scrollToTop}
@@ -528,14 +553,14 @@ export default function OSScene() {
             }}
           >
             <ArrowUp size={20} strokeWidth={2} aria-hidden="true" />
-          </motion.button>
+          </m.button>
         ) : null}
       </AnimatePresence>
 
       {/* Boot splash */}
       <AnimatePresence>
         {booting ? (
-          <motion.div
+          <m.div
             key="boot"
             aria-hidden="true"
             initial={{ opacity: 1 }}
@@ -544,7 +569,7 @@ export default function OSScene() {
             className="fixed inset-0 z-[999] flex flex-col items-center justify-center gap-6"
             style={{ background: '#050810' }}
           >
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -552,8 +577,8 @@ export default function OSScene() {
               style={{ color: '#00d4ff', fontFamily: "'JetBrains Mono', monospace", textShadow: '0 0 40px rgba(0,212,255,0.5)' }}
             >
               OMU/OS
-            </motion.div>
-            <motion.div
+            </m.div>
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -561,12 +586,12 @@ export default function OSScene() {
               style={{ color: '#93a7ba', fontFamily: "'JetBrains Mono', monospace" }}
             >
               {OS_VERSION} · INITIALIZING
-            </motion.div>
+            </m.div>
             <div
               className="w-48 h-px overflow-hidden mt-2"
               style={{ background: 'rgba(0,212,255,0.1)' }}
             >
-              <motion.div
+              <m.div
                 className="h-full"
                 initial={{ width: 0 }}
                 animate={{ width: '100%' }}
@@ -574,7 +599,7 @@ export default function OSScene() {
                 style={{ background: 'linear-gradient(90deg, transparent, #00d4ff, transparent)' }}
               />
             </div>
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 0.5, 0] }}
               transition={{ duration: 1.2, delay: 0.6, repeat: 1 }}
@@ -582,8 +607,8 @@ export default function OSScene() {
               style={{ color: 'rgba(0,212,255,0.7)', fontFamily: "'JetBrains Mono', monospace" }}
             >
               LOADING KERNEL...
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         ) : null}
       </AnimatePresence>
     </div>
