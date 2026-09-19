@@ -9,7 +9,7 @@
       meta タグで CSP を設定する（frame-ancestors / report-uri など一部ディレクティブは
       meta では無効なため含めていない）。
     -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://zenn.dev; script-src 'self'; object-src 'none'; base-uri 'self';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;" />
     <title>OMU OS | omu's Portfolio</title>
     <meta name="description" content="「ものをつくり、人にとどける。」― Webサービスの設計から実装・運用まで一貫してこなすバックエンドエンジニア omu のポートフォリオ。" />
 
