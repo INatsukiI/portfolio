@@ -2,6 +2,25 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/*
+  セルフホストフォント（@fontsource）。
+  以前は index.html から fonts.googleapis.com / fonts.gstatic.com を外部読込していたが、
+  - 初回表示で Google への DNS/TLS ハンドシェイクが発生する
+  - 閲覧者の IP が Google に送信される
+  - CSP で Google のオリジンを許可し続ける必要がある
+  という理由から、Vite がハッシュ付きで同一オリジン配信する @fontsource パッケージに切り替えている（#110）。
+  各 *.css は Google Fonts と同じ unicode-range 分割済みファイルなので、
+  実際に描画される文字が属する範囲のサブセットファイルのみが遅延ロードされる。
+*/
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/space-grotesk/400.css";
+@import "@fontsource/space-grotesk/500.css";
+@import "@fontsource/space-grotesk/600.css";
+@import "@fontsource/noto-sans-jp/400.css";
+@import "@fontsource/noto-sans-jp/500.css";
+@import "@fontsource/noto-sans-jp/700.css";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
