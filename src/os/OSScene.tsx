@@ -175,6 +175,14 @@ export default function OSScene() {
     setZTop(newZ)
     setWindows(ws => ws.map(w => w.id === id ? { ...w, z: newZ, minimized: false } : w))
   }
+  // タスクバーのタブから復帰・前面化したときは、DOM フォーカスも明示的にそのウィンドウの
+  // dialog へ移す（WCAG 2.4.3）。focusToken を増分すると OSWindow 側の useEffect が発火する。
+  // ウィンドウ内クリックによる前面化（focusWindow 経由の onFocus）は対象外にする —
+  // 毎回 dialog へ focus() し直すと、クリックした入力欄・ボタンからフォーカスを奪ってしまうため。
+  const activateWindowFromTaskbar = (id: string) => {
+    focusWindow(id)
+    setWindows(ws => ws.map(w => w.id === id ? { ...w, focusToken: (w.focusToken ?? 0) + 1 } : w))
+  }
   const moveWindow = (id: string, x: number, y: number) => {
     const topBar    = compact ? 36 : 40
     const bottomBar = 52
@@ -504,7 +512,7 @@ export default function OSScene() {
             <button
               key={w.id}
               data-testid={`taskbar-tab-${w.id}`}
-              onClick={() => focusWindow(w.id)}
+              onClick={() => activateWindowFromTaskbar(w.id)}
               aria-pressed={w.z === zTop && !w.minimized}
               aria-label={w.title.split('—')[0].trim()}
               className={cn(

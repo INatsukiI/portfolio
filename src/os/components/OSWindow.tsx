@@ -19,6 +19,9 @@ interface OSWindowProps {
   compact: boolean
   minimized?: boolean
   maximized?: boolean
+  /** タスクバー等から明示的にフォーカスを要求するたびに増分される値。
+   *  変化を検知して dialog へ focus() を移す（WCAG 2.4.3）。未指定なら初回マウント時のみ。 */
+  focusToken?: number
   onClose: () => void
   onFocus: () => void
   onMove: (x: number, y: number) => void
@@ -32,18 +35,19 @@ interface OSWindowProps {
 
 const MOVE_STEP = 20
 
-export function OSWindow({ id, title, x, y, w, h, z, compact, maximized, onClose, onFocus, onMove, onResize, onMinimize, onMaximize, children, plain }: OSWindowProps) {
+export function OSWindow({ id, title, x, y, w, h, z, compact, maximized, focusToken, onClose, onFocus, onMove, onResize, onMinimize, onMaximize, children, plain }: OSWindowProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
 
-  // マウント時のみ実行: ウィンドウを開いたらフォーカスをそのウィンドウへ移す（WCAG 2.4.3 / ダイアログ相当）。
+  // ウィンドウを開いたとき（初回マウント）に加え、タスクバーのタブ等から明示的にフォーカスが
+  // 要求されたとき（focusToken の変化）もフォーカスをそのウィンドウへ移す（WCAG 2.4.3 / ダイアログ相当）。
   // 縦 1 カラム表示では画面外に積まれることがあるので可視域へスクロールする。
   // compact は初回マウント時の値だけを見れば十分なため依存配列に含めない。
   const compactOnMount = useRef(compact)
   useEffect(() => {
     panelRef.current?.focus({ preventScroll: true })
     if (compactOnMount.current) panelRef.current?.scrollIntoView?.({ block: 'start' })
-  }, [])
+  }, [focusToken])
 
   const startDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (compact || maximized) return
