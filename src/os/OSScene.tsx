@@ -65,6 +65,15 @@ export default function OSScene() {
     const hashIds = parseWindowIdsFromHash(window.location.hash)
     return hashIds.length > 0 ? 10 + hashIds.length : 11
   })
+  // ハッシュ変更時は複数の openWindow が同じイベント内で連続して呼ばれるため、
+  // レンダー間で stale になり得る zTop state ではなく ref で次の z-index を予約する。
+  const zTopRef = useRef(zTop)
+  const allocateZ = () => {
+    const next = zTopRef.current + 1
+    zTopRef.current = next
+    setZTop(next)
+    return next
+  }
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   // 「視差効果を減らす」設定時は起動アニメーションを省略（WCAG 2.3.3）
   const [booting, setBooting] = useState(() => !prefersReducedMotion())
@@ -132,8 +141,7 @@ export default function OSScene() {
     if (active instanceof HTMLElement && active !== document.body) {
       triggerRef.current[id] = active
     }
-    const newZ = zTop + 1
-    setZTop(newZ)
+    const newZ = allocateZ()
     setWindows((ws) => {
       const ex = ws.find(w => w.id === id)
       if (ex) return ws.map(w => w.id === id ? { ...w, z: newZ, minimized: false } : w)
@@ -193,8 +201,7 @@ export default function OSScene() {
     setWindows(ws => ws.filter(w => w.id !== id))
   }
   const focusWindow = (id: string) => {
-    const newZ = zTop + 1
-    setZTop(newZ)
+    const newZ = allocateZ()
     setWindows(ws => ws.map(w => w.id === id ? { ...w, z: newZ, minimized: false } : w))
   }
   const moveWindow = (id: string, x: number, y: number) => {

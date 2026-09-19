@@ -32,6 +32,20 @@ describe('OSScene', () => {
       expect(screen.queryByText('welcome.txt — メモ帳')).toBeNull()
     })
   })
+
+  it('ハッシュ変更で複数ウィンドウを開くと、最後のウィンドウが最前面になる', async () => {
+    render(<OSScene />)
+
+    window.history.replaceState(null, '', '/portfolio/#about,projects')
+    window.dispatchEvent(new Event('hashchange'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('window-about')).toBeTruthy()
+      expect(screen.getByTestId('window-projects')).toBeTruthy()
+    })
+    expect(screen.getByTestId('taskbar-tab-about').getAttribute('aria-pressed')).toBe('false')
+    expect(screen.getByTestId('taskbar-tab-projects').getAttribute('aria-pressed')).toBe('true')
+  })
 })
 
 describe('OSScene — URL ハッシュ連携（ディープリンク）', () => {
