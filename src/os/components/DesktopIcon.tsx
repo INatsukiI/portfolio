@@ -1,4 +1,4 @@
-import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from 'react'
+import type { MouseEvent as ReactMouseEvent } from 'react'
 import { OSIcon } from '../icons'
 import type { IconKey } from '../icons'
 import { cn } from '@/lib/utils'
@@ -14,29 +14,21 @@ interface DesktopIconProps {
 }
 
 export function DesktopIcon({ kind, label, onOpen, selected, compact, testId }: DesktopIconProps) {
-  const handleClick = (e: ReactMouseEvent<HTMLDivElement>) => {
-    e.stopPropagation()
-    onOpen()
-  }
-
-  const handleKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (e.key !== 'Enter' && e.key !== ' ') return
-    e.preventDefault()
+  const handleClick = (e: ReactMouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     onOpen()
   }
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
+      aria-pressed={selected}
       aria-label={label}
       data-testid={testId}
       onClick={handleClick}
-      onDoubleClick={handleClick}
-      onKeyDown={handleKeyDown}
       className={cn(
         'flex flex-col items-center gap-2 p-2 rounded-lg cursor-pointer select-none transition-all duration-150 group',
+        'border-0 bg-transparent text-left appearance-none',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent focus-visible:ring-primary',
         compact ? 'w-full' : 'w-24',
         selected
@@ -67,6 +59,6 @@ export function DesktopIcon({ kind, label, onOpen, selected, compact, testId }: 
       >
         {label}
       </span>
-    </div>
+    </button>
   )
 }
