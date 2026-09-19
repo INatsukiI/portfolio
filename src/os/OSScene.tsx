@@ -4,7 +4,7 @@ import { DropdownMenu } from 'radix-ui'
 import { ArrowUp } from 'lucide-react'
 import { PROFILE } from '../profile'
 import { OSIcon } from './icons'
-import { useContainerSize, currentClock } from './hooks'
+import { useContainerSize, useClock } from './hooks'
 import { DESKTOP_ICONS, WIN_DEFAULTS, OS_VERSION } from './constants'
 import type { WindowState } from './constants'
 import { DesktopIcon } from './components/DesktopIcon'
@@ -53,7 +53,7 @@ export default function OSScene() {
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   // 「視差効果を減らす」設定時は起動アニメーションを省略（WCAG 2.3.3）
   const [booting, setBooting] = useState(() => !prefersReducedMotion())
-  const [clock, setClock] = useState(currentClock())
+  const clock = useClock()
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuSearch, setMenuSearch] = useState('')
   // compact（縦積み）表示で下方へスクロールしたとき「トップへ戻る」ボタンを出す
@@ -77,11 +77,6 @@ export default function OSScene() {
     const t = setTimeout(() => setBooting(false), 2000)
     return () => clearTimeout(t)
   }, [booting])
-
-  useEffect(() => {
-    const i = setInterval(() => setClock(currentClock()), 30000)
-    return () => clearInterval(i)
-  }, [])
 
   // ページを一定量スクロールしたら「トップへ戻る」ボタンを表示する
   // （実際の表示は compact 時のみ。下の描画ガードで制御する）
