@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://inatsukii.github.io/portfolio/sitemap.xml

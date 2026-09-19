@@ -132,14 +132,20 @@ src/
 │   ├── constants.ts     # ウィンドウ初期設定など
 │   ├── hooks.ts
 │   └── OSScene.tsx      # デスクトップ本体
-├── lib/utils.ts         # cn() ユーティリティ
+├── lib/
+│   ├── utils.ts          # cn() ユーティリティ
+│   └── structuredData.ts # JSON-LD（Person / WebSite）を profile.ts から生成する純粋関数。vite.config.js の transformIndexHtml から呼ばれる
 ├── profile.ts           # ポートフォリオコンテンツ（ここを編集して情報を更新）
 └── index.css            # Tailwind + shadcn テーマ変数
 
 e2e/                     # Playwright E2E テスト（*.spec.ts）＋ helpers.ts
-scripts/screenshot.mjs   # 目視確認用スクリーンショット取得スクリプト
-scripts/fetch-zenn.mjs   # Zenn 記事をビルド時に取得し public/zenn-articles.json に保存（prebuild で自動実行）
+scripts/screenshot.mjs        # 目視確認用スクリーンショット取得スクリプト
+scripts/fetch-zenn.mjs        # Zenn 記事をビルド時に取得し public/zenn-articles.json に保存（prebuild で自動実行）
+scripts/generate-og-image.mjs # public/og.png（OGP 用 1200×630 画像）を Playwright で描画・生成する手動実行スクリプト（ビルドには組み込まない）
 public/zenn-articles.json # Zenn 記事スナップショット（WinZenn が同一オリジンで読む。Zenn API は CORS 非対応のため直接 fetch 不可）
+public/og.png              # OGP / Twitter Card 用画像（1200×630）。scripts/generate-og-image.mjs で再生成
+public/robots.txt          # クローラ向け設定（Sitemap を指定）
+public/sitemap.xml         # サイトマップ（1 URL）
 playwright.config.ts     # Playwright 設定（testDir: e2e / webServer: npm run dev / Chromium のみ）
 
 .github/
