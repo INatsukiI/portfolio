@@ -7,6 +7,7 @@ import { OSIcon } from './icons'
 import { useContainerSize, currentClock } from './hooks'
 import { DESKTOP_ICONS, WIN_DEFAULTS, OS_VERSION } from './constants'
 import type { WindowState } from './constants'
+import { parseWindowIdsFromHash, buildHashFromWindowIds } from './hashRouting'
 import { DesktopIcon } from './components/DesktopIcon'
 import { OSWindow } from './components/OSWindow'
 import { WinAbout } from './windows/WinAbout'
@@ -44,12 +45,35 @@ export default function OSScene() {
   // ウィンドウはドラッグ配置をやめて上下に積み、ページ全体を縦スクロールで到達可能にする。
   const compact = cw < 720
   // window.innerWidth は同期で取れるので lazy initializer で中央 x を計算
+  // URL ハッシュ（例: #projects, #about,projects）に既知のウィンドウ ID があれば
+  // 起動時にそのウィンドウを直接開いた状態にする（ディープリンク）。
   const [windows, setWindows] = useState<WindowState[]>(() => {
+    const hashIds = parseWindowIdsFromHash(window.location.hash)
+    if (hashIds.length > 0) {
+      return hashIds.map((id, i) => {
+        const d = WIN_DEFAULTS[id]
+        const offset = i * 20
+        const cx = Math.max(0, Math.floor((window.innerWidth - d.w) / 2))
+        return { id, ...d, x: cx + offset, y: d.y + offset, z: 11 + i }
+      })
+    }
     const d = WIN_DEFAULTS.readme
     const cx = Math.max(0, Math.floor((window.innerWidth - d.w) / 2))
     return [{ id: 'readme', ...d, x: cx, z: 11 }]
   })
-  const [zTop, setZTop] = useState(11)
+  const [zTop, setZTop] = useState(() => {
+    const hashIds = parseWindowIdsFromHash(window.location.hash)
+    return hashIds.length > 0 ? 10 + hashIds.length : 11
+  })
+  // ハッシュ変更時は複数の openWindow が同じイベント内で連続して呼ばれるため、
+  // レンダー間で stale になり得る zTop state ではなく ref で次の z-index を予約する。
+  const zTopRef = useRef(zTop)
+  const allocateZ = () => {
+    const next = zTopRef.current + 1
+    zTopRef.current = next
+    setZTop(next)
+    return next
+  }
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   // 「視差効果を減らす」設定時は起動アニメーションを省略（WCAG 2.3.3）
   const [booting, setBooting] = useState(() => !prefersReducedMotion())
@@ -117,8 +141,7 @@ export default function OSScene() {
     if (active instanceof HTMLElement && active !== document.body) {
       triggerRef.current[id] = active
     }
-    const newZ = zTop + 1
-    setZTop(newZ)
+    const newZ = allocateZ()
     setWindows((ws) => {
       const ex = ws.find(w => w.id === id)
       if (ex) return ws.map(w => w.id === id ? { ...w, z: newZ, minimized: false } : w)
@@ -143,13 +166,42 @@ export default function OSScene() {
     })
   }
 
+  // 開いているウィンドウの集合を URL ハッシュへ反映する（履歴を汚さないよう replaceState を使う）。
+  // readme（デフォルトで開く welcome.txt）はホーム状態とみなし、通常表示時にハッシュへ
+  // 「#readme」が付いてしまわないようあえて対象外にする。
+  useEffect(() => {
+    const ids = windows
+      .filter(w => w.id !== 'readme')
+      .sort((a, b) => a.z - b.z)
+      .map(w => w.id)
+    const hash = buildHashFromWindowIds(ids)
+    if (window.location.hash === hash) return
+    const url = window.location.pathname + window.location.search + hash
+    window.history.replaceState(null, '', url)
+  }, [windows])
+
+  // アドレスバー直接編集・ページ内リンクなど外部からのハッシュ変更にも追従し、
+  // 該当ウィンドウを開く（既に開いていれば最前面に復帰する）。
+  // openWindow は毎レンダーで再生成されるため ref 経由で最新版を参照し、
+  // リスナーの張り直しを避ける。
+  const openWindowRef = useRef(openWindow)
+  useEffect(() => {
+    openWindowRef.current = openWindow
+  })
+  useEffect(() => {
+    const onHashChange = () => {
+      parseWindowIdsFromHash(window.location.hash).forEach(id => openWindowRef.current(id))
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
+
   const closeWindow = (id: string) => {
     restoreFocus(id)
     setWindows(ws => ws.filter(w => w.id !== id))
   }
   const focusWindow = (id: string) => {
-    const newZ = zTop + 1
-    setZTop(newZ)
+    const newZ = allocateZ()
     setWindows(ws => ws.map(w => w.id === id ? { ...w, z: newZ, minimized: false } : w))
   }
   const moveWindow = (id: string, x: number, y: number) => {
